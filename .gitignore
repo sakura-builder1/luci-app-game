@@ -1,0 +1,6 @@
+*.ipk
+*.apk
+build_dir/
+.tmp/
+*.orig
+*.rej

@@ -5,7 +5,7 @@
 			"uci": [ "game" ],
 			"ubus": {
 				"uci": [ "get", "configs", "changes" ],
-				"luci.sakura_game": [ "games", "status", "storage", "names", "favs", "cheat_get" ]
+				"luci.sakura_game": [ "games", "status", "storage", "names", "favs", "cheat_get", "assets_status" ]
 			}
 		},
 		"write": {
@@ -17,7 +17,7 @@
 			"ubus": {
 				"uci": [ "set", "add", "delete", "commit", "apply", "confirm", "rollback", "save", "revert", "changes" ],
 				"luci.sakura_game": [ "games", "status", "storage", "names", "favs", "cheat_get", "cheat_set",
-					"name_set", "fav_toggle", "save", "rm", "remount" ]
+					"name_set", "fav_toggle", "save", "rm", "remount", "assets_fetch", "assets_status" ]
 			}
 		}
 	}

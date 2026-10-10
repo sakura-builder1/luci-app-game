@@ -46,6 +46,8 @@ list)
 	json_add_object "games";      json_close_object
 	json_add_object "status";     json_close_object
 	json_add_object "remount";    json_close_object
+	json_add_object "assets_fetch";  json_close_object
+	json_add_object "assets_status"; json_close_object
 	json_add_object "names";      json_close_object
 	json_add_object "favs";       json_close_object
 	json_add_object "storage";    json_close_object
@@ -99,6 +101,27 @@ status)
 remount)
 	"$MOUNT" >/dev/null 2>&1
 	ok
+	;;
+assets_fetch)
+	# 后台运行 ✓ 不阻塞界面 ✓（-b = 后台 ✓）
+	start-stop-daemon -S -b -q -x /usr/libexec/game-assets 2>/dev/null \
+		|| start-stop-daemon -S -b -q -x /bin/sh -- /usr/libexec/game-assets 2>/dev/null
+	json_init; json_add_boolean ok 1; json_add_string msg "已开始下载 ✓ 可边下边玩（核心会先从 CDN 走）"; json_dump
+	;;
+assets_status)
+	ST=/tmp/game-assets.status
+	if [ ! -f "$ST" ]; then
+		json_init; json_add_string state "none"; json_add_int done 0; json_add_int total 0
+		json_add_string current ""; json_add_string size "0"; json_dump
+	else
+		json_init
+		json_add_string state "$(sed -n 1p "$ST")"
+		json_add_int done "$(sed -n 2p "$ST" 2>/dev/null || echo 0)"
+		json_add_int total "$(sed -n 3p "$ST" 2>/dev/null || echo 0)"
+		json_add_string current "$(sed -n 4p "$ST" 2>/dev/null)"
+		json_add_string size "$(du -sh "$(gdir)/assets" 2>/dev/null | awk '{print $1}')"
+		json_dump
+	fi
 	;;
 save)
 	IN=$(cat); json_load "$IN" >/dev/null 2>&1

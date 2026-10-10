@@ -1,0 +1,44 @@
+#!/bin/sh
+# game-assets —— 把 EmulatorJS 资源包镜像到路由器本地（后台跑 ✓ 进度写状态文件 ✓）
+CFG=game
+GAME_DIR=$(uci -q get $CFG.main.game_dir); [ -n "$GAME_DIR" ] || GAME_DIR=/opt/game
+CDN=$(uci -q get $CFG.main.asset_source); [ -n "$CDN" ] || CDN=https://cdn.emulatorjs.org/stable/data/
+CDN=${CDN%/}
+DST="$GAME_DIR/assets"
+ST=/tmp/game-assets.status
+
+mkdir -p "$DST"
+printf 'listing\n0\n0\n正在获取文件清单…\n' > "$ST"
+
+# ① 尽力从 GitHub 取完整文件清单（含各机型核心）
+LIST=$(wget -qO- --timeout=20 'https://api.github.com/repos/EmulatorJS/EmulatorJS/git/trees/main?recursive=1' 2>/dev/null \
+	| grep -o '"path": *"data/[^"]*"' | sed 's/"path": *"//; s/"$//')
+
+# ② 取不到就退回基础集合（核心仍会走 CDN，不影响游玩）
+[ -n "$LIST" ] || LIST="data/loader.js data/emulator.min.js data/emulator.min.css data/version.json"
+TOTAL=$(printf '%s\n' "$LIST" | sed '/^$/d' | wc -l)
+
+printf 'running\n0\n%s\n准备开始…\n' "$TOTAL" > "$ST"
+n=0; fail=0
+_oi="$IFS"; IFS='
+'
+for p in $LIST; do
+	[ -n "$p" ] || continue
+	rel=${p#data/}
+	[ -n "$rel" ] || continue
+	md="$DST/$(dirname "$rel")"
+	mkdir -p "$md"
+	if ! wget -q --timeout=120 -O "$DST/$rel" "$CDN/$rel" 2>/dev/null; then
+		fail=$((fail + 1))
+	fi
+	n=$((n + 1))
+	printf 'running\n%s\n%s\n%s\n' "$n" "$TOTAL" "$rel" > "$ST"
+done
+IFS="$_oi"
+
+if [ "$fail" -ge "$n" ] && [ "$n" -gt 0 ]; then
+	printf 'failed\n%s\n%s\n全部下载失败 ✗ 检查路由器能否访问外网\n' "$n" "$TOTAL" > "$ST"
+else
+	printf 'done\n%s\n%s\n完成 ✓（失败 %s 个）\n' "$n" "$TOTAL" "$fail" > "$ST"
+fi
+exit 0

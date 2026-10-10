@@ -10,6 +10,8 @@
 var callStatus  = rpc.declare({ object: 'luci.sakura_game', method: 'status' });
 var callStorage = rpc.declare({ object: 'luci.sakura_game', method: 'storage' });
 var callRemount = rpc.declare({ object: 'luci.sakura_game', method: 'remount' });
+var callAssets  = rpc.declare({ object: 'luci.sakura_game', method: 'assets_fetch' });
+var callAssetsSt= rpc.declare({ object: 'luci.sakura_game', method: 'assets_status' });
 
 var PLATFORMS = [
 	['nes','FC 红白机'],['snes','SFC 超任'],['gb','GB 掌机'],['gbc','GBC'],['gba','GBA'],
@@ -84,6 +86,35 @@ return view.extend({
 		s.description = '游戏 ' + (sg.roms || '0') + '　资源包 ' + (sg.assets || '0')
 			+ '　存档 ' + (sg.saves || '0') + '　剩余 ' + (sg.free || '?') + ' / ' + (sg.total || '?');
 
+		s = m.section(form.NamedSection, 'main', 'game', '模拟器资源包（本地化）');
+		s.anonymous = true;
+		s.description = '把模拟器核心下载到路由器 ✓ 之后内网闪电加载 + 断网也能玩 ✓（首次约几百 MB，后台慢慢下 ✓）';
+		o = s.option(form.DummyValue, '_assets', '资源包状态');
+		o.cfgvalue = function () {
+			var info = E('div', { 'style': 'line-height:1.9;font-size:.9em' }, [ '读取中…' ]);
+			var btn = E('button', { 'class': 'btn cbi-button cbi-button-action' }, [ '⬇ 下载 / 更新资源包' ]);
+			btn.addEventListener('click', function () {
+				btn.disabled = true;
+				callAssets().then(function (r) {
+					ui.addNotification(null, E('p', {}, [ (r && r.msg) || '已开始下载' ]), 'info');
+					setTimeout(function () { btn.disabled = false; poll(); }, 2000);
+				});
+			});
+			function paint(st) {
+				st = st || {};
+				var map = { none: '还没下载过', listing: '正在取清单', running: '下载中', done: '已完成 ✓', failed: '失败 ✗' };
+				info.innerHTML = '';
+				info.appendChild(E('div', {}, [ '状态：' + (map[st.state] || st.state || '未知') ]));
+				if (st.total) info.appendChild(E('div', {}, [ '进度：' + (st.done || 0) + ' / ' + st.total ]));
+				if (st.current) info.appendChild(E('div', { 'style': 'color:#8a8a8a' }, [ '当前：' + st.current ]));
+				info.appendChild(E('div', { 'style': 'color:#8a8a8a' }, [ '已占用：' + (st.size || '0') ]));
+			}
+			function poll() { callAssetsSt().then(paint); }
+			poll();
+			setInterval(poll, 3000);
+			return E('div', {}, [ info, E('div', { 'style': 'margin-top:.7em' }, [ btn ]) ]);
+		};
+
 		s = m.section(form.NamedSection, 'main', 'game', '游戏站');
 		s.anonymous = true;
 		s.description = '保存并应用后，进入游戏站开始玩 ✓';
@@ -92,7 +123,7 @@ return view.extend({
 			var wrap = E('div', {});
 			wrap.appendChild(E('button', {
 				'class': 'btn cbi-button cbi-button-action',
-				'click': function () { window.open('/luci-static/game/', '_blank'); }
+				'click': function () { window.open('/luci-static/game/' + (key ? ('?k=' + encodeURIComponent(key)) : ''), '_blank'); }
 			}, [ '🎮 进入游戏站（新窗口）' ]));
 			return wrap;
 		};
