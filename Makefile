@@ -9,6 +9,10 @@ LUCI_DEPENDS:=+luci-base +rpcd +uhttpd +libubox +jsonfilter +unzip
 PKG_VERSION:=1.0.0
 PKG_RELEASE:=20261011
 
+define Package/luci-app-game/conffiles
+/etc/config/game
+endef
+
 include $(TOPDIR)/feeds/luci/luci.mk
 
 # call BuildPackage - OpenWrt buildroot signature
