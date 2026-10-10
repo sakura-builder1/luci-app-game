@@ -5,8 +5,7 @@
 	var NAME = Q.get('n') || '游戏';
 	var CORE = Q.get('c') || 'nes';
 	var PLAT = Q.get('plat') || CORE;
-	var LOCAL = 'fs/assets/';
-	var CDN = 'https://cdn.emulatorjs.org/stable/data/';
+	var LOCAL = 'fs/assets/';   /* 只走本地 ✓ 不联网 ✓ */
 	var el = RG.el, emu = null, ready = false;
 
 	var ROMURL = 'fs/roms/' + PATH.split('/').map(encodeURIComponent).join('/');
@@ -56,12 +55,12 @@
 	/* ---------------- 启动模拟器 ---------------- */
 	function pickBase() {
 		return fetch(LOCAL + 'loader.js', { method: 'HEAD', cache: 'no-store' })
-			.then(function (r) { return r.ok ? LOCAL : CDN; })
-			.catch(function () { return CDN; });
+			.then(function (r) { return r.ok ? LOCAL : null; })
+			.catch(function () { return null; });
 	}
 
 	function boot(base) {
-		splashMsg('正在加载模拟器…', base === LOCAL ? '使用路由器本地资源包 ✓' : '使用外网 CDN（较慢）');
+		splashMsg('正在加载模拟器…', '使用路由器本地资源包 ✓（纯本地 · 不联网）');
 
 		window.EJS_player = '#canvas';
 		window.EJS_core = CORE;
@@ -81,7 +80,7 @@
 		s.src = base + 'loader.js';
 		s.onload = function () { watchEmu(base); };
 		s.onerror = function () {
-			if (base !== CDN) { boot(CDN); } else { failSplash('资源包加载失败 ✗'); }
+			failSplash('资源包加载失败 ✗ 文件可能不完整，请重新下载资源包 ✓');
 		};
 		document.head.appendChild(s);
 	}
@@ -97,7 +96,7 @@
 				RG.toast('🕹 开始吧：' + NAME);
 			} else if (Date.now() - t0 > 45000) {
 				clearInterval(iv);
-				failSplash('超时了（45 秒）✗ ' + (base === LOCAL ? '本地资源包可能不完整' : '外网可能不通'));
+				failSplash('超时了（45 秒）✗ 本地资源包可能不完整');
 			}
 		}, 300);
 	}
@@ -260,6 +259,15 @@
 	});
 
 	/* ---------------- go ---------------- */
-	pickBase().then(boot);
+	pickBase().then(function (base) {
+		if (!base) {
+			splashMsg('没有找到模拟器资源包 ✗',
+				'本插件【纯本地运行】✓ 不联网 ✓ 请先到「设置」页点「下载 / 更新资源包」✓');
+			document.getElementById('splash-sub').innerHTML =
+				'<a href="/cgi-bin/luci/admin/services/game/settings">→ 去设置页下载资源包</a>';
+			return;
+		}
+		boot(base);
+	});
 	RG.api('play', { p: PATH, n: NAME });
 })();

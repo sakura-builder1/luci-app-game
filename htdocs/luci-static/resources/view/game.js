@@ -88,11 +88,11 @@ return view.extend({
 
 		s = m.section(form.NamedSection, 'main', 'game', _('模拟器资源包（本地化）'));
 		s.anonymous = true;
-		s.description = _('把模拟器核心下载到路由器 ✓ 之后内网闪电加载 + 断网也能玩 ✓（首次约几百 MB，后台慢慢下 ✓）');
+		s.description = _('模拟器【纯本地运行】✓ 不联网 ✓ 首次装完必须下载一次资源包 ✓ 之后永久内网离线可玩 ✓（供 FC/SFC/GBA/MD 等机型，按需下载 ✓）');
 		o = s.option(form.DummyValue, '_assets', _('资源包状态'));
 		o.cfgvalue = function () {
 			var info = E('div', { 'style': 'line-height:1.9;font-size:.9em' }, [ _('读取中…') ]);
-			var btn = E('button', { 'class': 'btn cbi-button cbi-button-action' }, [ _('⬇ 下载 / 更新资源包') ]);
+			var btn = E('button', { 'class': 'btn cbi-button cbi-button-action' }, [ _('⬇ 下载 / 更新资源包（首次必做 ✓）') ]);
 			btn.addEventListener('click', function () {
 				btn.disabled = true;
 				callAssets().then(function (r) {
