@@ -1,5 +1,6 @@
 #!/bin/sh
 # luci.sakura_game —— 怀旧游戏后端
+# 协议：`list` 输出方法表 ✓ `call <方法>` 且参数走 stdin ✓（与本机 live2d 插件完全一致 ✓）
 # 安全：删除/改名只接受 ROM 目录内的相对路径 ✓ 拒绝 / 与 .. ✓
 . /usr/share/libubox/jshn.sh 2>/dev/null
 
@@ -8,31 +9,35 @@ SCAN=/usr/libexec/game-scan
 MOUNT=/usr/libexec/game-mount
 
 uget() { uci -q get "$CFG.main.$1" 2>/dev/null; }
-gdir()  { _d=$(uget game_dir); [ -n "$_d" ] || _d=/opt/game; printf '%s' "${_d%/}"; }
+gdir() { _d=$(uget game_dir); [ -n "$_d" ] || _d=/opt/game; printf '%s' "${_d%/}"; }
+arg()  { printf '%s' "$IN" | jsonfilter -e "@.$1" 2>/dev/null; }
 
-# 把 TSV 映射文件读成 jshn 数组对象
 read_map() {   # $1=文件名  $2=数组名  $3=值字段名
 	_f="$(gdir)/$1"; _arr="$2"; _vf="$3"
 	json_add_array "$_arr"
-	[ -f "$_f" ] || { json_close_array; return; }
-	_oifs="$IFS"; IFS='
+	if [ -f "$_f" ]; then
+		_oifs="$IFS"; IFS='
 '
-	for line in $(cat "$_f" 2>/dev/null); do
-		_k=${line%%	*}; _v=${line#*	}
-		[ -n "$_k" ] || continue
-		json_add_object
-		json_add_string path "$_k"
-		json_add_string "$_vf" "$_v"
-		json_close_object
-	done
-	IFS="$_oifs"
+		for line in $(cat "$_f" 2>/dev/null); do
+			_k=${line%%	*}; _v=${line#*	}
+			[ -n "$_k" ] || continue
+			json_add_object
+			json_add_string path "$_k"
+			json_add_string "$_vf" "$_v"
+			json_close_object
+		done
+		IFS="$_oifs"
+	fi
 	json_close_array
 }
 
 map_set() {    # $1=文件名  $2=key  $3=value（value 为空则删除该键）
-	_f="$(gdir)/$1"; _k="$2"; _v="$3"
-	_t="$_f.tmp"
-	[ -f "$_f" ] && awk -F'\t' -v k="$_k" '$1 != k' "$_f" > "$_t" 2>/dev/null || : > "$_t"
+	_f="$(gdir)/$1"; _k="$2"; _v="$3"; _t="$_f.tmp"
+	if [ -f "$_f" ]; then
+		awk -F'\t' -v k="$_k" '$1 != k' "$_f" > "$_t" 2>/dev/null || : > "$_t"
+	else
+		: > "$_t"
+	fi
 	[ -n "$_v" ] && printf '%s\t%s\n' "$_k" "$_v" >> "$_t"
 	mv "$_t" "$_f"
 }
@@ -42,152 +47,131 @@ fail() { json_init; json_add_boolean ok 0; json_add_string msg "$1"; json_dump; 
 
 case "$1" in
 list)
-	json_init
-	json_add_object "games";      json_close_object
-	json_add_object "status";     json_close_object
-	json_add_object "remount";    json_close_object
-	json_add_object "assets_fetch";  json_close_object
-	json_add_object "assets_status"; json_close_object
-	json_add_object "names";      json_close_object
-	json_add_object "favs";       json_close_object
-	json_add_object "storage";    json_close_object
-	json_add_object "name_set"
-		json_add_string "path" "string"
-		json_add_string "display" "string"
-	json_close_object
-	json_add_object "fav_toggle"
-		json_add_string "path" "string"
-	json_close_object
-	json_add_object "cheat_get"
-		json_add_string "path" "string"
-	json_close_object
-	json_add_object "cheat_set"
-		json_add_string "path" "string"
-		json_add_string "text" "string"
-	json_close_object
-	json_add_object "save"
-		json_add_string "enabled" "string"
-		json_add_string "use_local_assets" "string"
-		json_add_string "show_covers" "string"
-	json_close_object
-	json_add_object "rm"
-		json_add_string "path" "string"
-	json_close_object
-	json_dump
+	echo '{ "games": {}, "status": {}, "storage": {}, "remount": {}, "names": {}, "favs": {},
+	"assets_fetch": {}, "assets_status": {},
+	"name_set": { "path": {}, "display": {} }, "fav_toggle": { "path": {} },
+	"cheat_get": { "path": {} }, "cheat_set": { "path": {}, "text": {} },
+	"save": { "enabled": {}, "use_local_assets": {}, "show_covers": {} },
+	"rm": { "path": {} } }'
 	;;
-games)   exec "$SCAN" ;;
-names)   json_init; read_map names.map names display; json_dump ;;
-favs)    json_init; read_map fav.map   favs  fav;     json_dump ;;
-storage)
-	json_init
-	json_add_string "game_dir" "$(gdir)"
-	json_add_string "roms"     "$(du -sh "$(gdir)/roms" 2>/dev/null | awk '{print $1}')"
-	json_add_string "assets"   "$(du -sh "$(gdir)/assets" 2>/dev/null | awk '{print $1}')"
-	json_add_string "saves"    "$(du -sh "$(gdir)/saves" 2>/dev/null | awk '{print $1}')"
-	json_add_string "free"     "$(df -h "$(gdir)" 2>/dev/null | tail -1 | awk '{print $4}')"
-	json_add_string "total"    "$(df -h "$(gdir)" 2>/dev/null | tail -1 | awk '{print $2}')"
-	json_dump
-	;;
-status)
-	json_init
-	json_add_string "game_dir" "$(gdir)"
-	json_add_string "web_dir"  "$(uget web_dir)"
-	json_add_string "enabled"  "$(uget enabled)"
-	json_add_string "cdn"      "$(uget asset_source)"
-	json_add_string "use_local_assets" "$(uget use_local_assets)"
-	json_add_string "show_covers" "$(uget show_covers)"
-	json_dump
-	;;
-remount)
-	"$MOUNT" >/dev/null 2>&1
-	ok
-	;;
-assets_fetch)
-	# 后台运行 ✓ 不阻塞界面 ✓（-b = 后台 ✓）
-	start-stop-daemon -S -b -q -x /usr/libexec/game-assets 2>/dev/null \
-		|| start-stop-daemon -S -b -q -x /bin/sh -- /usr/libexec/game-assets 2>/dev/null
-	json_init; json_add_boolean ok 1; json_add_string msg "已开始下载 ✓ 可边下边玩（核心会先从 CDN 走）"; json_dump
-	;;
-assets_status)
-	ST=/tmp/game-assets.status
-	if [ ! -f "$ST" ]; then
-		json_init; json_add_string state "none"; json_add_int done 0; json_add_int total 0
-		json_add_string current ""; json_add_string size "0"; json_dump
-	else
+call)
+	case "$2" in
+	games)   exec "$SCAN" ;;
+	names)   json_init; read_map names.map names display; json_dump ;;
+	favs)    json_init; read_map fav.map   favs  fav;     json_dump ;;
+	storage)
 		json_init
-		json_add_string state "$(sed -n 1p "$ST")"
-		json_add_int done "$(sed -n 2p "$ST" 2>/dev/null || echo 0)"
-		json_add_int total "$(sed -n 3p "$ST" 2>/dev/null || echo 0)"
-		json_add_string current "$(sed -n 4p "$ST" 2>/dev/null)"
+		json_add_string "game_dir" "$(gdir)"
+		json_add_string "roms"   "$(du -sh "$(gdir)/roms"   2>/dev/null | awk '{print $1}')"
+		json_add_string "assets" "$(du -sh "$(gdir)/assets" 2>/dev/null | awk '{print $1}')"
+		json_add_string "saves"  "$(du -sh "$(gdir)/saves"  2>/dev/null | awk '{print $1}')"
+		json_add_string "free"   "$(df -h "$(gdir)" 2>/dev/null | tail -1 | awk '{print $4}')"
+		json_add_string "total"  "$(df -h "$(gdir)" 2>/dev/null | tail -1 | awk '{print $2}')"
+		json_dump
+		;;
+	status)
+		json_init
+		json_add_string "game_dir" "$(gdir)"
+		json_add_string "web_dir"  "$(uget web_dir)"
+		json_add_string "enabled"  "$(uget enabled)"
+		json_add_string "cdn"      "$(uget asset_source)"
+		json_add_string "use_local_assets" "$(uget use_local_assets)"
+		json_add_string "show_covers" "$(uget show_covers)"
+		json_dump
+		;;
+	remount)
+		"$MOUNT" >/dev/null 2>&1
+		ok
+		;;
+	assets_fetch)
+		start-stop-daemon -S -b -q -x /usr/libexec/game-assets 2>/dev/null
+		json_init; json_add_boolean ok 1
+		json_add_string msg "已开始下载 ✓ 可边下边玩（核心会先从 CDN 走）"; json_dump
+		;;
+	assets_status)
+		ST=/tmp/game-assets.status
+		json_init
+		if [ -f "$ST" ]; then
+			json_add_string state "$(sed -n 1p "$ST")"
+			json_add_int done "$(sed -n 2p "$ST" 2>/dev/null || echo 0)"
+			json_add_int total "$(sed -n 3p "$ST" 2>/dev/null || echo 0)"
+			json_add_string current "$(sed -n 4p "$ST" 2>/dev/null)"
+		else
+			json_add_string state "none"; json_add_int done 0; json_add_int total 0
+			json_add_string current ""
+		fi
 		json_add_string size "$(du -sh "$(gdir)/assets" 2>/dev/null | awk '{print $1}')"
 		json_dump
-	fi
+		;;
+	save)
+		read -r IN 2>/dev/null
+		en=$(arg enabled); la=$(arg use_local_assets); sc=$(arg show_covers)
+		[ -n "$en" ] && uci set $CFG.main.enabled="$en"
+		[ -n "$la" ] && uci set $CFG.main.use_local_assets="$la"
+		[ -n "$sc" ] && uci set $CFG.main.show_covers="$sc"
+		uci commit $CFG
+		"$MOUNT" >/dev/null 2>&1
+		ok
+		;;
+	name_set)
+		read -r IN 2>/dev/null
+		p=$(arg path); d=$(arg display)
+		case "$p" in ""|/*|*..*) fail "非法路径"; exit 0 ;; esac
+		map_set names.map "$p" "$d"
+		ok
+		;;
+	fav_toggle)
+		read -r IN 2>/dev/null
+		p=$(arg path)
+		case "$p" in ""|/*|*..*) fail "非法路径"; exit 0 ;; esac
+		if [ -n "$(awk -F'\t' -v k="$p" '$1==k{print $2; exit}' "$(gdir)/fav.map" 2>/dev/null)" ]; then
+			map_set fav.map "$p" ""
+		else
+			map_set fav.map "$p" "1"
+		fi
+		ok
+		;;
+	cheat_get)
+		read -r IN 2>/dev/null
+		p=$(arg path)
+		case "$p" in ""|/*|*..*) fail "非法路径"; exit 0 ;; esac
+		_c="$(gdir)/cheats/$(basename "$p").cht"
+		json_init; json_add_boolean ok 1
+		if [ -f "$_c" ]; then json_add_string text "$(cat "$_c")"
+		else json_add_string text ""; fi
+		json_dump
+		;;
+	cheat_set)
+		read -r IN 2>/dev/null
+		p=$(arg path); t=$(arg text)
+		case "$p" in ""|/*|*..*) fail "非法路径"; exit 0 ;; esac
+		_bn=$(basename "$p")
+		_c="$(gdir)/cheats/$_bn.cht"
+		_s="$(gdir)/roms/$p.cht"
+		if [ -n "$t" ]; then
+			mkdir -p "$(gdir)/cheats"
+			printf '%s\n' "$t" > "$_c"
+			_md=$(dirname "$_s"); [ -d "$_md" ] && printf '%s\n' "$t" > "$_s"
+		else
+			rm -f "$_c" "$_s"
+		fi
+		ok
+		;;
+	rm)
+		read -r IN 2>/dev/null
+		p=$(arg path)
+		case "$p" in ""|/*|*..*) fail "非法路径"; exit 0 ;; esac
+		[ -f "$(gdir)/roms/$p" ] || { fail "文件不存在"; exit 0; }
+		rm -f "$(gdir)/roms/$p"
+		ok
+		;;
+	*)
+		fail "未知方法：$2"
+		;;
+	esac
 	;;
-save)
-	IN=$(cat); json_load "$IN" >/dev/null 2>&1
-	json_get_var enabled enabled
-	json_get_var use_local_assets use_local_assets
-	json_get_var show_covers show_covers
-	[ -n "$enabled" ] && uci set $CFG.main.enabled="$enabled"
-	[ -n "$use_local_assets" ] && uci set $CFG.main.use_local_assets="$use_local_assets"
-	[ -n "$show_covers" ] && uci set $CFG.main.show_covers="$show_covers"
-	uci commit $CFG
-	"$MOUNT" >/dev/null 2>&1
-	ok
-	;;
-name_set)
-	IN=$(cat); json_load "$IN" >/dev/null 2>&1
-	json_get_var p path; json_get_var d display
-	case "$p" in ""|/*|*..*) fail "非法路径"; exit 0 ;; esac
-	map_set names.map "$p" "$d"
-	ok
-	;;
-fav_toggle)
-	IN=$(cat); json_load "$IN" >/dev/null 2>&1
-	json_get_var p path
-	case "$p" in ""|/*|*..*) fail "非法路径"; exit 0 ;; esac
-	if [ -n "$(awk -F'\t' -v k="$p" '$1==k{print $2; exit}' "$(gdir)/fav.map" 2>/dev/null)" ]; then
-		map_set fav.map "$p" ""
-	else
-		map_set fav.map "$p" "1"
-	fi
-	ok
-	;;
-cheat_get)
-	IN=$(cat); json_load "$IN" >/dev/null 2>&1
-	json_get_var p path
-	case "$p" in ""|/*|*..*) fail "非法路径"; exit 0 ;; esac
-	_c="$(gdir)/cheats/$(basename "$p").cht"
-	if [ -f "$_c" ]; then
-		json_init; json_add_boolean ok 1; json_add_string text "$(cat "$_c")"; json_dump
-	else
-		json_init; json_add_boolean ok 1; json_add_string text ""; json_dump
-	fi
-	;;
-cheat_set)
-	IN=$(cat); json_load "$IN" >/dev/null 2>&1
-	json_get_var p path; json_get_var t text
-	case "$p" in ""|/*|*..*) fail "非法路径"; exit 0 ;; esac
-	_bn=$(basename "$p")
-	_c="$(gdir)/cheats/$_bn.cht"
-	_s="$(gdir)/roms/$p.cht"          # 与 ROM 同名同目录 ✓ EmulatorJS 直接读它 ✓
-	if [ -n "$t" ]; then
-		mkdir -p "$(gdir)/cheats"
-		printf '%s\n' "$t" > "$_c"
-		_md=$(dirname "$_s"); [ -d "$_md" ] && printf '%s\n' "$t" > "$_s"
-	else
-		rm -f "$_c" "$_s"
-	fi
-	ok
-	;;
-rm)
-	IN=$(cat); json_load "$IN" >/dev/null 2>&1
-	json_get_var p path
-	ROM_DIR="$(gdir)/roms"
-	case "$p" in ""|/*|*..*) fail "非法路径"; exit 0 ;; esac
-	[ -f "$ROM_DIR/$p" ] || { fail "文件不存在"; exit 0; }
-	rm -f "$ROM_DIR/$p"
-	ok
+*)
+	echo '{}'
 	;;
 esac
 exit 0

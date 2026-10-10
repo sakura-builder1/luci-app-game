@@ -8,10 +8,23 @@ DST="$GAME_DIR/assets"
 ST=/tmp/game-assets.status
 
 mkdir -p "$DST"
+
+# 下载器兜底：OpenWrt 默认是 uclient-fetch ✗ wget 不一定有 ✓
+if command -v wget >/dev/null 2>&1; then
+	DL() { wget -q --timeout="${3:-120}" -O "$2" "$1" 2>/dev/null; }
+	DL_TEXT() { wget -qO- --timeout="${2:-20}" "$1" 2>/dev/null; }
+elif command -v uclient-fetch >/dev/null 2>&1; then
+	DL() { uclient-fetch -q -T "${3:-120}" -O "$2" "$1" 2>/dev/null; }
+	DL_TEXT() { uclient-fetch -q -T "${2:-20}" -O - "$1" 2>/dev/null; }
+else
+	DL() { return 1; }
+	DL_TEXT() { return 1; }
+fi
+
 printf 'listing\n0\n0\n正在获取文件清单…\n' > "$ST"
 
 # ① 尽力从 GitHub 取完整文件清单（含各机型核心）
-LIST=$(wget -qO- --timeout=20 'https://api.github.com/repos/EmulatorJS/EmulatorJS/git/trees/main?recursive=1' 2>/dev/null \
+LIST=$(DL_TEXT 'https://api.github.com/repos/EmulatorJS/EmulatorJS/git/trees/main?recursive=1' 20 \
 	| grep -o '"path": *"data/[^"]*"' | sed 's/"path": *"//; s/"$//')
 
 # ② 取不到就退回基础集合（核心仍会走 CDN，不影响游玩）
@@ -28,7 +41,7 @@ for p in $LIST; do
 	[ -n "$rel" ] || continue
 	md="$DST/$(dirname "$rel")"
 	mkdir -p "$md"
-	if ! wget -q --timeout=120 -O "$DST/$rel" "$CDN/$rel" 2>/dev/null; then
+	if ! DL "$CDN/$rel" "$DST/$rel" 120; then
 		fail=$((fail + 1))
 	fi
 	n=$((n + 1))

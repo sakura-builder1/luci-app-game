@@ -11,9 +11,14 @@ CFG=game
 	uci set $CFG.main.asset_source='https://cdn.emulatorjs.org/stable/data/'
 	uci set $CFG.main.show_covers='1'
 	uci set $CFG.main.show_recent='1'
-	uci set $CFG.main.upload_key="$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')"
 	uci commit $CFG
 }
+
+# 口令兜底：升级安装 / 老配置也要有 ✓（否则上传接口无保护 ✗）
+if [ -z "$(uci -q get $CFG.main.upload_key)" ]; then
+	uci set $CFG.main.upload_key="$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+	uci commit $CFG
+fi
 
 GAME_DIR=$(uci -q get $CFG.main.game_dir)
 [ -n "$GAME_DIR" ] || GAME_DIR=/opt/game
