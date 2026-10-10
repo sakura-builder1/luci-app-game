@@ -1,0 +1,24 @@
+{
+	"luci-app-game": {
+		"description": "怀旧游戏 · 游戏站",
+		"read": {
+			"uci": [ "game" ],
+			"ubus": {
+				"uci": [ "get", "configs", "changes" ],
+				"luci.sakura_game": [ "games", "status", "storage", "names", "favs", "cheat_get" ]
+			}
+		},
+		"write": {
+			"uci": [ "game" ],
+			"file": {
+				"/usr/libexec/game-mount": [ "exec" ],
+				"/usr/libexec/game-scan": [ "exec" ]
+			},
+			"ubus": {
+				"uci": [ "set", "add", "delete", "commit", "apply", "confirm", "rollback", "save", "revert", "changes" ],
+				"luci.sakura_game": [ "games", "status", "storage", "names", "favs", "cheat_get", "cheat_set",
+					"name_set", "fav_toggle", "save", "rm", "remount" ]
+			}
+		}
+	}
+}

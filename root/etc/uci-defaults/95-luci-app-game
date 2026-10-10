@@ -1,0 +1,30 @@
+#!/bin/sh
+CFG=game
+
+[ -n "$(uci -q get $CFG.main)" ] || {
+	uci set $CFG.main=$CFG
+	uci set $CFG.main.enabled='1'
+	uci set $CFG.main.game_dir='/opt/game'
+	uci set $CFG.main.rom_dir='/opt/game/roms'
+	uci set $CFG.main.web_dir='/www/luci-static/game/fs'
+	uci set $CFG.main.use_local_assets='1'
+	uci set $CFG.main.asset_source='https://cdn.emulatorjs.org/stable/data/'
+	uci set $CFG.main.show_covers='1'
+	uci set $CFG.main.show_recent='1'
+	uci commit $CFG
+}
+
+GAME_DIR=$(uci -q get $CFG.main.game_dir)
+[ -n "$GAME_DIR" ] || GAME_DIR=/opt/game
+
+for d in roms covers cheats saves assets data; do
+	mkdir -p "$GAME_DIR/$d"
+done
+for d in nes snes gb gbc gba nds n64 psx segaMD segaMS segaGG segaCD sega32x \
+         atari2600 atari7800 lynx pce ngp ws vb arcade bios; do
+	mkdir -p "$GAME_DIR/roms/$d"
+done
+
+/etc/init.d/game enable
+/usr/libexec/game-mount
+exit 0

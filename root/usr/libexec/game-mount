@@ -1,0 +1,22 @@
+#!/bin/sh
+# 把 /opt/game 整棵树映射到 web 可访问位置：bind-mount 优先 ✓ 符号链接兜底 ✓
+CFG=game
+GAME_DIR=$(uci -q get $CFG.main.game_dir); [ -n "$GAME_DIR" ] || GAME_DIR=/opt/game
+WEB_DIR=$(uci -q get $CFG.main.web_dir);   [ -n "$WEB_DIR" ] || WEB_DIR=/www/luci-static/game/fs
+
+[ "$(uci -q get $CFG.main.enabled)" = "0" ] && { echo "game: disabled"; exit 0; }
+
+mkdir -p "$GAME_DIR"
+umount "$WEB_DIR" 2>/dev/null
+[ -L "$WEB_DIR" ] && rm -f "$WEB_DIR"
+rmdir "$WEB_DIR" 2>/dev/null
+mkdir -p "$WEB_DIR"
+
+if mount --bind "$GAME_DIR" "$WEB_DIR" 2>/dev/null; then
+	echo "game: bind $GAME_DIR -> $WEB_DIR"
+else
+	rmdir "$WEB_DIR" 2>/dev/null
+	ln -sfn "$GAME_DIR" "$WEB_DIR"
+	echo "game: symlink $GAME_DIR -> $WEB_DIR"
+fi
+exit 0

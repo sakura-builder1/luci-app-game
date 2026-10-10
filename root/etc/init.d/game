@@ -1,0 +1,9 @@
+#!/bin/sh /etc/rc.common
+# 让 /opt/game 整棵树能被 uhttpd 访问（roms/covers/cheats/saves/assets 一次搞定）
+START=99
+STOP=10
+USE_PROCD=1
+
+start_service()  { /usr/libexec/game-mount; }
+stop_service()   { /usr/libexec/game-unmount; }
+reload_service() { /usr/libexec/game-mount; }

@@ -1,0 +1,19 @@
+{
+	"admin/services/game": {
+		"title": "怀旧游戏",
+		"order": 66,
+		"action": { "type": "firstchild" }
+	},
+	"admin/services/game/settings": {
+		"title": "① 设置",
+		"order": 1,
+		"action": { "type": "view", "path": "game" },
+		"depends": { "acl": [ "luci-app-game" ] }
+	},
+	"admin/services/game/station": {
+		"title": "② 游戏站",
+		"order": 2,
+		"action": { "type": "view", "path": "game-station" },
+		"depends": { "acl": [ "luci-app-game" ] }
+	}
+}

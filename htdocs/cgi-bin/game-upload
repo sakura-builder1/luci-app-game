@@ -1,0 +1,74 @@
+#!/bin/sh
+# 上传游戏（流式写入 ✓ 不占内存 ✓ 支持 zip 自动解压 ✓ 带口令校验 ✓）
+. /usr/share/libubox/jshn.sh 2>/dev/null
+
+CFG=game
+hdr() { printf 'Content-Type: application/json\r\nCache-Control: no-store\r\n\r\n'; }
+say() { hdr; json_init; json_add_boolean ok "$1"; json_add_string msg "$2"; json_dump; echo; exit 0; }
+
+GAME_DIR=$(uci -q get $CFG.main.game_dir); [ -n "$GAME_DIR" ] || GAME_DIR=/opt/game
+ROM_DIR="$GAME_DIR/roms"
+KEY=$(uci -q get $CFG.main.upload_key)
+
+q=$QUERY_STRING
+getq() { printf '%s' "$q" | tr '&' '\n' | sed -n "s/^$1=//p" | head -1; }
+urldec() { printf '%b' "$(printf '%s' "$1" | sed 's/+/ /g; s/%/\\x/g')" 2>/dev/null || printf '%s' "$1"; }
+
+key=$(getq key)
+dir=$(urldec "$(getq dir)")
+name=$(urldec "$(getq name)")
+
+if [ -n "$KEY" ] && [ "$key" != "$KEY" ]; then say 0 "上传口令错误"; fi
+
+case "$dir" in
+	""|.|./) dir="" ;;
+	*..*|/*) say 0 "非法目录" ;;
+esac
+if [ -n "$dir" ]; then
+	case "$dir" in
+		nes|snes|gb|gbc|gba|nds|n64|psx|segaMD|segaMS|segaGG|segaCD|sega32x|\
+		atari2600|atari7800|lynx|pce|ngp|ws|vb|arcade|bios) : ;;
+		*) say 0 "未知平台目录：$dir" ;;
+	esac
+fi
+
+name=$(printf '%s' "$name" | tr -d '\r\n' | sed 's#.*/##' | sed 's#\.\.##g')
+[ -n "$name" ] || say 0 "缺少文件名"
+
+target_dir="$ROM_DIR/$dir"
+mkdir -p "$target_dir"
+tmp="$target_dir/.upload.$$"
+
+cat > "$tmp" || say 0 "写入失败"
+sz=$(wc -c < "$tmp" 2>/dev/null || echo 0)
+if [ "$sz" -le 0 ]; then rm -f "$tmp"; say 0 "空文件"; fi
+
+case "$name" in
+	*.zip|*.ZIP)
+		zdir="$target_dir/.unzip.$$"
+		mkdir -p "$zdir"
+		if command -v unzip >/dev/null 2>&1; then
+			unzip -o -q "$tmp" -d "$zdir" 2>/dev/null
+			cnt=0
+			_oi="$IFS"; IFS='
+'
+			for f in $(find "$zdir" -type f 2>/dev/null); do
+				bn=$(basename "$f")
+				case "$bn" in *.txt|*.nfo|*.md|*.jpg|*.png|*.url|*.db) continue ;; esac
+				if mv -f "$f" "$target_dir/$bn" 2>/dev/null; then cnt=$((cnt + 1)); fi
+			done
+			IFS="$_oi"
+			rm -f "$tmp"
+			find "$zdir" -depth -delete 2>/dev/null
+			say 1 "ZIP 已解压，导入 $cnt 个文件"
+		else
+			mv -f "$tmp" "$target_dir/$name"
+			say 1 "已上传（未装 unzip ✗ ZIP 未解压）"
+		fi
+		;;
+	*)
+		mv -f "$tmp" "$target_dir/$name"
+		mb=$(awk -v s="$sz" 'BEGIN{printf "%.1f", s/1048576}')
+		say 1 "已上传：$name（${mb} MB）"
+		;;
+esac

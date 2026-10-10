@@ -1,0 +1,104 @@
+#!/bin/sh
+# game-scan —— 扫描游戏目录，输出游戏库 JSON（jshn 构建，天然转义安全）
+. /usr/share/libubox/jshn.sh 2>/dev/null
+
+CFG=game
+GAME_DIR=$(uci -q get $CFG.main.game_dir); [ -n "$GAME_DIR" ] || GAME_DIR=/opt/game
+GAME_DIR=${GAME_DIR%/}
+ROM_DIR="$GAME_DIR/roms"
+COVER_DIR="$GAME_DIR/covers"
+
+is_plat() {
+	case "$1" in
+		nes|snes|gb|gbc|gba|nds|n64|psx|segaMD|segaMS|segaGG|segaCD|sega32x|\
+		atari2600|atari7800|lynx|pce|ngp|ws|vb|arcade|mame2003) return 0 ;;
+		*) return 1 ;;
+	esac
+}
+
+ext2plat() {
+	case "$(printf '%s' "$1" | tr 'A-Z' 'a-z')" in
+		nes|fds|unf|unif) echo nes ;;
+		smc|sfc|swc|fig) echo snes ;;
+		gb) echo gb ;; gbc) echo gbc ;; gba) echo gba ;;
+		nds) echo nds ;; n64|z64|v64) echo n64 ;;
+		cue|chd|pbp|iso|img) echo psx ;;
+		md|gen|smd) echo segaMD ;; sms) echo segaMS ;; gg) echo segaGG ;;
+		a26) echo atari2600 ;; a78) echo atari7800 ;; lnx) echo lynx ;;
+		pce) echo pce ;; ngp|ngc) echo ngp ;; ws|wsc) echo ws ;; vb|vboy) echo vb ;;
+		zip|7z) echo arcade ;;
+		*) echo "" ;;
+	esac
+}
+
+plat_name() {
+	case "$1" in
+		nes) echo "FC 红白机" ;; snes) echo "SFC 超任" ;; gb) echo "GB 掌机" ;;
+		gbc) echo "GBC" ;; gba) echo "GBA" ;; nds) echo "NDS" ;; n64) echo "N64" ;;
+		psx) echo "PS1" ;; segaMD) echo "MD 世嘉" ;; segaMS) echo "SMS" ;;
+		segaGG) echo "GG" ;; segaCD) echo "Sega CD" ;; sega32x) echo "32X" ;;
+		atari2600) echo "雅达利 2600" ;; atari7800) echo "雅达利 7800" ;;
+		lynx) echo "Atari Lynx" ;; pce) echo "PCE 引擎" ;; ngp) echo "掌上蛇" ;;
+		ws) echo "WonderSwan" ;; vb) echo "Virtual Boy" ;;
+		arcade) echo "街机" ;; mame2003) echo "MAME 2003" ;;
+		*) echo "$1" ;;
+	esac
+}
+
+find_cover() {
+	_b="$1"
+	[ -f "$COVER_DIR/$_b.png" ]  && { echo "covers/$_b.png";  return; }
+	[ -f "$COVER_DIR/$_b.jpg" ]  && { echo "covers/$_b.jpg";  return; }
+	[ -f "$COVER_DIR/$_b.jpeg" ] && { echo "covers/$_b.jpeg"; return; }
+	[ -f "$COVER_DIR/$_b.webp" ] && { echo "covers/$_b.webp"; return; }
+	[ -f "$COVER_DIR/$_b.gif" ]  && { echo "covers/$_b.gif";  return; }
+	echo ""
+}
+
+json_init
+json_add_string root "$GAME_DIR"
+json_add_string web "/luci-static/game/fs"
+json_add_array platforms
+for p in nes snes gb gbc gba nds n64 psx segaMD segaMS segaGG segaCD sega32x \
+         atari2600 atari7800 lynx pce ngp ws vb arcade mame2003; do
+	json_add_object
+	json_add_string key "$p"
+	json_add_string name "$(plat_name "$p")"
+	json_close_object
+done
+json_close_array
+
+json_add_array games
+n=0
+OLDIFS="$IFS"; IFS='
+'
+for f in $(find "$ROM_DIR" -type f 2>/dev/null); do
+	rel=${f#$ROM_DIR/}
+	case "$rel" in
+		bios/*|.*|*/.git/*) continue ;;
+		*.txt|*.md|*.nfo|*.xml|*.dat|*.json|*.png|*.jpg|*.jpeg|*.webp|*.gif|*.db) continue ;;
+	esac
+	top=$(printf '%s' "$rel" | cut -d/ -f1)
+	if is_plat "$top"; then plat="$top"; else plat=$(ext2plat "${rel##*.}"); fi
+	[ -n "$plat" ] || continue
+	base=$(basename "$rel"); name=${base%.*}
+	size=$(stat -c %s "$f" 2>/dev/null || echo 0)
+	mtime=$(stat -c %Y "$f" 2>/dev/null || echo 0)
+	json_add_object
+	json_add_string path "$rel"
+	json_add_string name "$name"
+	json_add_string platform "$plat"
+	json_add_string platname "$(plat_name "$plat")"
+	json_add_int size "$size"
+	json_add_int mtime "$mtime"
+	json_add_string cover "$(find_cover "$base")"
+	json_add_string cheat "$([ -f "$GAME_DIR/cheats/$base.cht" ] && echo yes || echo no)"
+	json_close_object
+	n=$((n + 1))
+done
+IFS="$OLDIFS"
+json_close_array
+json_add_int total "$n"
+json_dump
+echo
+exit 0

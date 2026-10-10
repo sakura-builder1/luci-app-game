@@ -1,0 +1,6 @@
+#!/bin/sh
+CFG=game
+WEB_DIR=$(uci -q get $CFG.main.web_dir); [ -n "$WEB_DIR" ] || WEB_DIR=/www/luci-static/game/fs
+umount "$WEB_DIR" 2>/dev/null
+[ -L "$WEB_DIR" ] && rm -f "$WEB_DIR"
+exit 0
