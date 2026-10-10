@@ -1,0 +1,10 @@
+
+config game 'main'
+	option enabled '1'
+	option game_dir '/opt/game'
+	option rom_dir '/opt/game/roms'
+	option web_dir '/www/luci-static/game/fs'
+	option use_local_assets '1'
+	option asset_source 'https://cdn.emulatorjs.org/stable/data/'
+	option show_covers '1'
+	option show_recent '1'
