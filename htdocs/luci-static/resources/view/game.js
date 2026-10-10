@@ -12,6 +12,7 @@ var callStorage = rpc.declare({ object: 'luci.sakura_game', method: 'storage' })
 var callRemount = rpc.declare({ object: 'luci.sakura_game', method: 'remount' });
 var callAssets  = rpc.declare({ object: 'luci.sakura_game', method: 'assets_fetch' });
 var callAssetsSt= rpc.declare({ object: 'luci.sakura_game', method: 'assets_status' });
+var callKey     = rpc.declare({ object: 'luci.sakura_game', method: 'key', params: [ 'action' ] });
 
 var PLATFORMS = [
 	['nes',_('FC 红白机')],['snes',_('SFC 超任')],['gb',_('GB 掌机')],['gbc','GBC'],['gba','GBA'],
@@ -23,7 +24,7 @@ var PLATFORMS = [
 
 function doUpload(file, plat, key, bar, log, btn) {
 	var xhr = new XMLHttpRequest();
-	var url = '/cgi-bin/game-upload?key=' + encodeURIComponent(key)
+	var url = '/cgi-bin/game-upload?k=' + encodeURIComponent(key)
 		+ '&dir=' + encodeURIComponent(plat)
 		+ '&name=' + encodeURIComponent(file.name);
 
@@ -155,6 +156,59 @@ return view.extend({
 				E('div', { 'style': 'margin-top:.6em' }, [ inp, btn ]),
 				bar, log
 			]);
+		};
+
+		/* ---------------- 上传口令保护（可选 ✓ 默认关闭 ✓）---------------- */
+		s = m.section(form.NamedSection, 'main', 'game', _('上传口令保护（可选）'));
+		s.anonymous = true;
+		s.description = _('默认【关闭】✓ 内网打开就能用 ✓ 开启后：上传 / 存档 / 改名 / 收藏 都需要口令 ✓ 多人共用路由器时防乱动 ✓');
+
+		o = s.option(form.DummyValue, '_keybox', _('保护状态'));
+		o.cfgvalue = function () {
+			var wrap = E('div', {});
+			var state = E('div', { 'style': 'min-height:3.2em;line-height:1.9' }, [ _('读取中…') ]);
+			var show = function (st) {
+				while (state.firstChild) state.removeChild(state.firstChild);
+				st = st || {};
+				if (st.enabled) {
+					state.appendChild(E('div', {}, [ _('🔒 已开启：写操作需要口令') ]));
+					state.appendChild(E('div', {}, [
+						_('当前口令：'),
+						E('code', { 'style': 'background:rgba(128,128,128,.18);padding:.15em .5em;border-radius:4px;user-select:all' }, [ st.key || '' ]),
+						E('button', { 'class': 'btn cbi-button', 'style': 'margin-left:.6em',
+							'click': function () {
+								var t = document.createElement('textarea');
+								t.value = st.key || ''; document.body.appendChild(t); t.select();
+								try { document.execCommand('copy'); } catch (e) {}
+								document.body.removeChild(t);
+								ui.addNotification(null, E('p', {}, [ _('口令已复制 ✓') ]), 'info');
+							}
+						}, [ _('📋 复制') ])
+					]));
+					state.appendChild(E('div', { 'style': 'font-size:.85em;color:#8a8a8a' },
+						[ _('提示：从本页「进入游戏站」按钮打开会自动带上口令 ✓ 直接输网址则读操作可用、写操作会被拦 ✓') ]));
+				} else {
+					state.appendChild(E('div', {}, [ _('🔓 已关闭：内网直接可用，无需口令 ✓') ]));
+				}
+			};
+			var act = function (a) {
+				callKey(a).then(function (r) {
+					if (a === 'enable' || a === 'disable' || a === 'regen')
+						ui.addNotification(null, E('p', {}, [ (r && r.msg) || _('已更新 ✓') ]), 'info');
+					show(r);
+					if (a === 'enable' || a === 'disable' || a === 'regen') setTimeout(function () { location.reload(); }, 900);
+				}).catch(function () { state.appendChild(E('div', {}, [ _('读取失败 ✗') ])); });
+			};
+			wrap.appendChild(state);
+			wrap.appendChild(E('div', { 'style': 'margin-top:.5em' }, [
+				E('button', { 'class': 'btn cbi-button cbi-button-action', 'click': function () { act('enable'); } }, [ _('🔒 开启保护（自动生成口令）') ]),
+				' ',
+				E('button', { 'class': 'btn cbi-button', 'click': function () { act('regen'); } }, [ _('🔄 重新生成口令') ]),
+				' ',
+				E('button', { 'class': 'btn cbi-button', 'click': function () { act('disable'); } }, [ _('🔓 关闭保护') ])
+			]));
+			act('');
+			return wrap;
 		};
 
 		return m.render();

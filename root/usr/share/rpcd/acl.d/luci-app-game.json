@@ -5,7 +5,7 @@
 			"uci": [ "game" ],
 			"ubus": {
 				"uci": [ "get", "configs", "changes" ],
-				"luci.sakura_game": [ "games", "status", "storage", "names", "favs", "cheat_get", "assets_status" ]
+				"luci.sakura_game": [ "games", "status", "storage", "names", "favs", "cheat_get", "assets_status", "key" ]
 			}
 		},
 		"write": {
