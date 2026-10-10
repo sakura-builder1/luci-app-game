@@ -1,0 +1,105 @@
+#!/bin/sh
+# 游戏站数据接口：把 ubus 调用包装成简单 HTTP 接口
+# 读操作免口令 ✓ 写操作（改名/收藏/删除/金手指）需带上传口令 ✓
+. /usr/share/libubox/jshn.sh 2>/dev/null
+
+CFG=game
+hdr() { printf 'Content-Type: application/json\r\nCache-Control: no-store\r\n\r\n'; }
+KEY=$(uci -q get $CFG.main.upload_key)
+
+q=$QUERY_STRING
+getq() { printf '%s' "$q" | tr '&' '\n' | sed -n "s/^$1=//p" | head -1; }
+urldec() { printf '%b' "$(printf '%s' "$1" | sed 's/+/ /g; s/%/\\x/g')" 2>/dev/null || printf '%s' "$1"; }
+
+m=$(getq m)
+k=$(getq k)
+[ -n "$k" ] || k=$HTTP_X_GAME_KEY
+
+ub() {   # ub <方法> <json参数>
+	if [ -n "$2" ]; then ubus call luci.sakura_game "$1" "$2" 2>/dev/null
+	else ubus call luci.sakura_game "$1" '{}' 2>/dev/null; fi
+}
+
+need_key() {
+	if [ -z "$KEY" ] || [ "$k" = "$KEY" ]; then return 0; fi
+	hdr; json_init; json_add_boolean ok 0; json_add_string msg "口令错误 ✗ 请从 LuCI 页面进入游戏站"; json_dump; echo; exit 0
+}
+
+jesc() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
+
+case "$m" in
+	games)   hdr; ub games ;;
+	names)   hdr; ub names ;;
+	favs)    hdr; ub favs ;;
+	storage) hdr; ub storage ;;
+	status)  hdr; ub status ;;
+
+	fav_toggle)
+		need_key
+		p=$(urldec "$(getq p)")
+		case "$p" in ""|/*|*..*) hdr; json_init; json_add_boolean ok 0; json_add_string msg "非法路径"; json_dump; exit 0 ;; esac
+		hdr; ub fav_toggle "{\"path\":\"$(jesc "$p")\"}"
+		;;
+	name_set)
+		need_key
+		p=$(urldec "$(getq p)"); d=$(urldec "$(getq d)")
+		case "$p" in ""|/*|*..*) hdr; json_init; json_add_boolean ok 0; json_add_string msg "非法路径"; json_dump; exit 0 ;; esac
+		hdr; ub name_set "{\"path\":\"$(jesc "$p")\",\"display\":\"$(jesc "$d")\"}"
+		;;
+	rm)
+		need_key
+		p=$(urldec "$(getq p)")
+		case "$p" in ""|/*|*..*) hdr; json_init; json_add_boolean ok 0; json_add_string msg "非法路径"; json_dump; exit 0 ;; esac
+		hdr; ub rm "{\"path\":\"$(jesc "$p")\"}"
+		;;
+	cheat_get)
+		p=$(urldec "$(getq p)")
+		case "$p" in ""|/*|*..*) hdr; json_init; json_add_boolean ok 0; json_add_string msg "非法路径"; json_dump; exit 0 ;; esac
+		hdr; ub cheat_get "{\"path\":\"$(jesc "$p")\"}"
+		;;
+	cheat_set)
+		need_key
+		p=$(urldec "$(getq p)")
+		case "$p" in ""|/*|*..*) hdr; json_init; json_add_boolean ok 0; json_add_string msg "非法路径"; json_dump; exit 0 ;; esac
+		body=$(cat)
+		hdr; ub cheat_set "{\"path\":\"$(jesc "$p")\",\"text\":\"$(jesc "$body")\"}"
+		;;
+	key_check)
+		hdr; json_init; json_add_boolean ok 1; json_add_boolean valid "$([ -z "$KEY" ] || [ "$k" = "$KEY" ] && echo 1 || echo 0)"; json_dump
+		;;
+
+	play)   # 记录最近游玩（写 playlog）
+		p=$(urldec "$(getq p)")
+		n=$(urldec "$(getq n)")
+		case "$p" in ""|/*|*..*) exit 0 ;; esac
+		f="/opt/game/recent.map"
+		t=$(date +%s)
+		awk -F'\t' -v k="$p" '$1 != k' "$f" > "$f.tmp" 2>/dev/null || : > "$f.tmp"
+		printf '%s\t%s\t%s\n' "$p" "$n" "$t" >> "$f.tmp"
+		tail -n 60 "$f.tmp" > "$f" 2>/dev/null
+		rm -f "$f.tmp"
+		hdr; json_init; json_add_boolean ok 1; json_dump
+		;;
+	recent)
+		f=/opt/game/recent.map
+		hdr; json_init; json_add_array recent
+		if [ -f "$f" ]; then
+			_oi="$IFS"; IFS='
+'
+			for line in $(cat "$f" 2>/dev/null); do
+				json_add_object
+				json_add_string path "${line%%	*}"; _r=${line#*	}
+				json_add_string name "${_r%%	*}"
+				json_add_int at "${_r##*	}"
+				json_close_object
+			done
+			IFS="$_oi"
+		fi
+		json_close_array; json_dump
+		;;
+	*)
+		hdr; json_init; json_add_boolean ok 0; json_add_string msg "未知方法：$m"; json_dump
+		;;
+esac
+echo
+exit 0

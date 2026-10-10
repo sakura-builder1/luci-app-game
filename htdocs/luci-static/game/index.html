@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1a1420">
+<title>🎮 怀旧游戏站</title>
+<link rel="stylesheet" href="game.css">
+</head>
+<body class="rg-lib">
+
+<header class="rg-top">
+	<div class="rg-brand">🎮 <span>怀旧游戏站</span></div>
+	<div class="rg-tabs">
+		<button class="rg-tab on" data-view="all">全部</button>
+		<button class="rg-tab" data-view="recent">最近</button>
+		<button class="rg-tab" data-view="fav">收藏</button>
+	</div>
+	<input id="rg-q" class="rg-input rg-search" type="search" placeholder="搜索游戏…">
+	<button id="rg-refresh" class="rg-btn" title="重新扫描">↻</button>
+	<button id="rg-key" class="rg-btn" title="设置口令">🔑</button>
+</header>
+
+<div id="rg-chips" class="rg-chips"></div>
+
+<main id="rg-grid" class="rg-grid"></main>
+<div id="rg-empty" class="rg-empty" hidden></div>
+
+<footer class="rg-foot">
+	<span id="rg-stat"></span>
+	<span class="rg-sp"></span>
+	<a href="/cgi-bin/luci/admin/services/game/settings" class="rg-link">⚙ 设置</a>
+</footer>
+
+<div id="rg-keybox" class="rg-modal" hidden>
+	<div class="rg-modal-in">
+		<h3>🔑 设置口令</h3>
+		<p class="rg-dim">改名 / 收藏 / 删除 / 金手指需要口令 ✓ 在 LuCI 设置页可以查看 ✓</p>
+		<input id="rg-keyin" class="rg-input" type="text" placeholder="粘贴口令…">
+		<div class="rg-row">
+			<button id="rg-keysave" class="rg-btn rg-primary">保存</button>
+			<button id="rg-keyclose" class="rg-btn">关闭</button>
+		</div>
+	</div>
+</div>
+
+<script src="lib.js"></script>
+<script src="library.js"></script>
+</body>
+</html>
