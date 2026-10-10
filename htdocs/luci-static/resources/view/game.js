@@ -14,11 +14,11 @@ var callAssets  = rpc.declare({ object: 'luci.sakura_game', method: 'assets_fetc
 var callAssetsSt= rpc.declare({ object: 'luci.sakura_game', method: 'assets_status' });
 
 var PLATFORMS = [
-	['nes','FC 红白机'],['snes','SFC 超任'],['gb','GB 掌机'],['gbc','GBC'],['gba','GBA'],
-	['nds','NDS'],['n64','N64'],['psx','PS1'],['segaMD','MD 世嘉'],['segaMS','SMS'],
-	['segaGG','GG'],['segaCD','Sega CD'],['sega32x','32X'],['atari2600','雅达利 2600'],
-	['atari7800','雅达利 7800'],['lynx','Atari Lynx'],['pce','PCE 引擎'],['ngp','掌上蛇'],
-	['ws','WonderSwan'],['vb','Virtual Boy'],['arcade','街机'],['bios','BIOS 文件（PS1 等）']
+	['nes',_('FC 红白机')],['snes',_('SFC 超任')],['gb',_('GB 掌机')],['gbc','GBC'],['gba','GBA'],
+	['nds','NDS'],['n64','N64'],['psx','PS1'],['segaMD',_('MD 世嘉')],['segaMS','SMS'],
+	['segaGG','GG'],['segaCD','Sega CD'],['sega32x','32X'],['atari2600',_('雅达利 2600')],
+	['atari7800',_('雅达利 7800')],['lynx','Atari Lynx'],['pce',_('PCE 引擎')],['ngp',_('掌上蛇')],
+	['ws','WonderSwan'],['vb','Virtual Boy'],['arcade',_('街机')],['bios',_('BIOS 文件（PS1 等）')]
 ];
 
 function doUpload(file, plat, key, bar, log, btn) {
@@ -28,7 +28,7 @@ function doUpload(file, plat, key, bar, log, btn) {
 		+ '&name=' + encodeURIComponent(file.name);
 
 	btn.disabled = true;
-	log.appendChild(E('div', {}, [ '⏳ 上传中：' + file.name + '（' + (file.size / 1048576).toFixed(1) + ' MB）' ]));
+	log.appendChild(E('div', {}, [ _('⏳ 上传中：') + file.name + '（' + (file.size / 1048576).toFixed(1) + ' MB）' ]));
 
 	xhr.upload.onprogress = function (ev) {
 		if (ev.lengthComputable) bar.firstChild.style.width = (ev.loaded / ev.total * 100).toFixed(1) + '%';
@@ -43,7 +43,7 @@ function doUpload(file, plat, key, bar, log, btn) {
 	};
 	xhr.onerror = function () {
 		btn.disabled = false;
-		log.appendChild(E('div', {}, [ '❌ 网络错误' ]));
+		log.appendChild(E('div', {}, [ _('❌ 网络错误') ]));
 	};
 	xhr.open('POST', url, true);
 	xhr.send(file);
@@ -59,55 +59,55 @@ return view.extend({
 		var key = uci.get('game', 'main', 'upload_key') || '';
 		var m, s, o, curPlat = 'nes';
 
-		m = new form.Map('game', '🎮 怀旧游戏 · 设置',
-			'让路由器变成怀旧游戏站：游戏放在路由器上 ✓ 手机 / 电脑 / 平板打开浏览器就能玩 ✓');
+		m = new form.Map('game', _('🎮 怀旧游戏 · 设置'),
+			_('让路由器变成怀旧游戏站：游戏放在路由器上 ✓ 手机 / 电脑 / 平板打开浏览器就能玩 ✓'));
 
-		s = m.section(form.NamedSection, 'main', 'game', '基本设置');
+		s = m.section(form.NamedSection, 'main', 'game', _('基本设置'));
 		s.anonymous = true;
 
-		o = s.option(form.Flag, 'enabled', '启用插件', '关闭后游戏站不可用，ROM 目录也不再映射到 Web');
+		o = s.option(form.Flag, 'enabled', _('启用插件'), _('关闭后游戏站不可用，ROM 目录也不再映射到 Web'));
 		o.default = '1'; o.rmempty = false;
 
-		o = s.option(form.Flag, 'show_covers', '显示封面图', '把同名图片放进 covers/ 目录即作为封面');
+		o = s.option(form.Flag, 'show_covers', _('显示封面图'), _('把同名图片放进 covers/ 目录即作为封面'));
 		o.default = '1';
 
-		o = s.option(form.Flag, 'use_local_assets', '使用本地模拟器资源包',
-			'优先用路由器本地的模拟器核心 ✓ 内网快 + 断网也能玩 ✓ 缺核心时自动回退外网 CDN');
+		o = s.option(form.Flag, 'use_local_assets', _('使用本地模拟器资源包'),
+			_('优先用路由器本地的模拟器核心 ✓ 内网快 + 断网也能玩 ✓ 缺核心时自动回退外网 CDN'));
 		o.default = '1';
 
-		o = s.option(form.Value, 'game_dir', '数据根目录', '游戏 / 封面 / 金手指 / 存档都放这里，建议放大容量分区');
+		o = s.option(form.Value, 'game_dir', _('数据根目录'), _('游戏 / 封面 / 金手指 / 存档都放这里，建议放大容量分区'));
 		o.default = '/opt/game'; o.rmempty = false;
 
-		o = s.option(form.Value, 'asset_source', '外网资源地址（CDN）', '本地没有的机型从这里加载');
+		o = s.option(form.Value, 'asset_source', _('外网资源地址（CDN）'), _('本地没有的机型从这里加载'));
 		o.default = 'https://cdn.emulatorjs.org/stable/data/';
 
-		s = m.section(form.NamedSection, 'main', 'game', '存储情况');
+		s = m.section(form.NamedSection, 'main', 'game', _('存储情况'));
 		s.anonymous = true;
-		s.description = '游戏 ' + (sg.roms || '0') + '　资源包 ' + (sg.assets || '0')
-			+ '　存档 ' + (sg.saves || '0') + '　剩余 ' + (sg.free || '?') + ' / ' + (sg.total || '?');
+		s.description = _('游戏 ') + (sg.roms || '0') + _('　资源包 ') + (sg.assets || '0')
+			+ _('　存档 ') + (sg.saves || '0') + _('　剩余 ') + (sg.free || '?') + ' / ' + (sg.total || '?');
 
-		s = m.section(form.NamedSection, 'main', 'game', '模拟器资源包（本地化）');
+		s = m.section(form.NamedSection, 'main', 'game', _('模拟器资源包（本地化）'));
 		s.anonymous = true;
-		s.description = '把模拟器核心下载到路由器 ✓ 之后内网闪电加载 + 断网也能玩 ✓（首次约几百 MB，后台慢慢下 ✓）';
-		o = s.option(form.DummyValue, '_assets', '资源包状态');
+		s.description = _('把模拟器核心下载到路由器 ✓ 之后内网闪电加载 + 断网也能玩 ✓（首次约几百 MB，后台慢慢下 ✓）');
+		o = s.option(form.DummyValue, '_assets', _('资源包状态'));
 		o.cfgvalue = function () {
-			var info = E('div', { 'style': 'line-height:1.9;font-size:.9em' }, [ '读取中…' ]);
-			var btn = E('button', { 'class': 'btn cbi-button cbi-button-action' }, [ '⬇ 下载 / 更新资源包' ]);
+			var info = E('div', { 'style': 'line-height:1.9;font-size:.9em' }, [ _('读取中…') ]);
+			var btn = E('button', { 'class': 'btn cbi-button cbi-button-action' }, [ _('⬇ 下载 / 更新资源包') ]);
 			btn.addEventListener('click', function () {
 				btn.disabled = true;
 				callAssets().then(function (r) {
-					ui.addNotification(null, E('p', {}, [ (r && r.msg) || '已开始下载' ]), 'info');
+					ui.addNotification(null, E('p', {}, [ (r && r.msg) || _('已开始下载') ]), 'info');
 					setTimeout(function () { btn.disabled = false; poll(); }, 2000);
 				});
 			});
 			function paint(st) {
 				st = st || {};
-				var map = { none: '还没下载过', listing: '正在取清单', running: '下载中', done: '已完成 ✓', failed: '失败 ✗' };
+				var map = { none: _('还没下载过'), listing: _('正在取清单'), running: _('下载中'), done: _('已完成 ✓'), failed: _('失败 ✗') };
 				info.innerHTML = '';
-				info.appendChild(E('div', {}, [ '状态：' + (map[st.state] || st.state || '未知') ]));
-				if (st.total) info.appendChild(E('div', {}, [ '进度：' + (st.done || 0) + ' / ' + st.total ]));
-				if (st.current) info.appendChild(E('div', { 'style': 'color:#8a8a8a' }, [ '当前：' + st.current ]));
-				info.appendChild(E('div', { 'style': 'color:#8a8a8a' }, [ '已占用：' + (st.size || '0') ]));
+				info.appendChild(E('div', {}, [ _('状态：') + (map[st.state] || st.state || _('未知')) ]));
+				if (st.total) info.appendChild(E('div', {}, [ _('进度：') + (st.done || 0) + ' / ' + st.total ]));
+				if (st.current) info.appendChild(E('div', { 'style': 'color:#8a8a8a' }, [ _('当前：') + st.current ]));
+				info.appendChild(E('div', { 'style': 'color:#8a8a8a' }, [ _('已占用：') + (st.size || '0') ]));
 			}
 			function poll() { callAssetsSt().then(paint); }
 			poll();
@@ -115,43 +115,43 @@ return view.extend({
 			return E('div', {}, [ info, E('div', { 'style': 'margin-top:.7em' }, [ btn ]) ]);
 		};
 
-		s = m.section(form.NamedSection, 'main', 'game', '游戏站');
+		s = m.section(form.NamedSection, 'main', 'game', _('游戏站'));
 		s.anonymous = true;
-		s.description = '保存并应用后，进入游戏站开始玩 ✓';
-		o = s.option(form.DummyValue, '_station', '打开游戏站');
+		s.description = _('保存并应用后，进入游戏站开始玩 ✓');
+		o = s.option(form.DummyValue, '_station', _('打开游戏站'));
 		o.cfgvalue = function () {
 			var wrap = E('div', {});
 			wrap.appendChild(E('button', {
 				'class': 'btn cbi-button cbi-button-action',
 				'click': function () { window.open('/luci-static/game/' + (key ? ('?k=' + encodeURIComponent(key)) : ''), '_blank'); }
-			}, [ '🎮 进入游戏站（新窗口）' ]));
+			}, [ _('🎮 进入游戏站（新窗口）') ]));
 			return wrap;
 		};
 
-		s = m.section(form.NamedSection, 'main', 'game', '上传游戏');
+		s = m.section(form.NamedSection, 'main', 'game', _('上传游戏'));
 		s.anonymous = true;
-		s.description = '支持大文件流式上传 ✓ ZIP 自动解压 ✓ 也可以直接把文件丢进目录 ✓';
+		s.description = _('支持大文件流式上传 ✓ ZIP 自动解压 ✓ 也可以直接把文件丢进目录 ✓');
 
 		var bar = E('div', { 'style': 'height:8px;border-radius:6px;background:rgba(128,128,128,.25);overflow:hidden;margin-top:.6em' }, [
 			E('div', { id: 'up-bar', 'style': 'height:100%;width:0;background:#d878a0;transition:width .2s' })
 		]);
 		var log = E('div', { id: 'up-log', 'style': 'font-size:.85em;color:#8a8a8a;margin-top:.5em;line-height:1.8' }, []);
 
-		o = s.option(form.DummyValue, '_upload', '上传文件');
+		o = s.option(form.DummyValue, '_upload', _('上传文件'));
 		o.cfgvalue = function () {
 			var sel = E('select', { 'class': 'cbi-input-select', 'change': function (ev) { curPlat = ev.target.value; } },
 				PLATFORMS.map(function (p) { return E('option', { value: p[0] }, [ p[1] ]); }));
 			var inp = E('input', { type: 'file', 'style': 'margin-left:.5em' });
-			var btn = E('button', { 'class': 'btn cbi-button cbi-button-action', 'style': 'margin-left:.5em' }, [ '开始上传' ]);
+			var btn = E('button', { 'class': 'btn cbi-button cbi-button-action', 'style': 'margin-left:.5em' }, [ _('开始上传') ]);
 
 			btn.addEventListener('click', function () {
 				var f = inp.files && inp.files[0];
-				if (!f) { ui.addNotification(null, E('p', {}, [ '请先选文件' ]), 'warning'); return; }
+				if (!f) { ui.addNotification(null, E('p', {}, [ _('请先选文件') ]), 'warning'); return; }
 				doUpload(f, curPlat, key, bar, log, btn);
 			});
 
 			return E('div', {}, [
-				E('div', {}, [ '放到哪个平台：', sel ]),
+				E('div', {}, [ _('放到哪个平台：'), sel ]),
 				E('div', { 'style': 'margin-top:.6em' }, [ inp, btn ]),
 				bar, log
 			]);

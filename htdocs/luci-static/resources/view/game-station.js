@@ -10,8 +10,8 @@ return view.extend({
 		var url = '/luci-static/game/' + (k ? ('?k=' + encodeURIComponent(k)) : '');
 		location.replace(url);
 		return E('div', { 'style': 'padding:2em;text-align:center' }, [
-			E('p', {}, [ '正在进入游戏站…' ]),
-			E('p', {}, [ E('a', { href: url }, [ '如果没有自动跳转，点这里' ]) ])
+			E('p', {}, [ _('正在进入游戏站…') ]),
+			E('p', {}, [ E('a', { href: url }, [ _('如果没有自动跳转，点这里') ]) ])
 		]);
 	}
 });

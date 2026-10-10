@@ -1,0 +1,196 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: luci-app-game\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-11 01:00+0800\n"
+"PO-Revision-Date: 2026-10-11 01:00+0800\n"
+"Last-Translator: sakura-builder1\n"
+"Language-Team: Chinese\n"
+"Language: zh_Hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "BIOS 文件（PS1 等）"
+msgstr "BIOS 文件（PS1 等）"
+
+msgid "FC 红白机"
+msgstr "FC 红白机"
+
+msgid "GB 掌机"
+msgstr "GB 掌机"
+
+msgid "MD 世嘉"
+msgstr "MD 世嘉"
+
+msgid "PCE 引擎"
+msgstr "PCE 引擎"
+
+msgid "SFC 超任"
+msgstr "SFC 超任"
+
+msgid "⏳ 上传中："
+msgstr "⏳ 上传中："
+
+msgid "❌ 网络错误"
+msgstr "❌ 网络错误"
+
+msgid "⬇ 下载 / 更新资源包"
+msgstr "⬇ 下载 / 更新资源包"
+
+msgid "　剩余 "
+msgstr "　剩余 "
+
+msgid "　存档 "
+msgstr "　存档 "
+
+msgid "　资源包 "
+msgstr "　资源包 "
+
+msgid "上传文件"
+msgstr "上传文件"
+
+msgid "上传游戏"
+msgstr "上传游戏"
+
+msgid "下载中"
+msgstr "下载中"
+
+msgid "优先用路由器本地的模拟器核心 ✓ 内网快 + 断网也能玩 ✓ 缺核心时自动回退外网 CDN"
+msgstr "优先用路由器本地的模拟器核心 ✓ 内网快 + 断网也能玩 ✓ 缺核心时自动回退外网 CDN"
+
+msgid "使用本地模拟器资源包"
+msgstr "使用本地模拟器资源包"
+
+msgid "保存并应用后，进入游戏站开始玩 ✓"
+msgstr "保存并应用后，进入游戏站开始玩 ✓"
+
+msgid "关闭后游戏站不可用，ROM 目录也不再映射到 Web"
+msgstr "关闭后游戏站不可用，ROM 目录也不再映射到 Web"
+
+msgid "启用插件"
+msgstr "启用插件"
+
+msgid "基本设置"
+msgstr "基本设置"
+
+msgid "外网资源地址（CDN）"
+msgstr "外网资源地址（CDN）"
+
+msgid "失败 ✗"
+msgstr "失败 ✗"
+
+msgid "如果没有自动跳转，点这里"
+msgstr "如果没有自动跳转，点这里"
+
+msgid "存储情况"
+msgstr "存储情况"
+
+msgid "已占用："
+msgstr "已占用："
+
+msgid "已完成 ✓"
+msgstr "已完成 ✓"
+
+msgid "已开始下载"
+msgstr "已开始下载"
+
+msgid "开始上传"
+msgstr "开始上传"
+
+msgid "当前："
+msgstr "当前："
+
+msgid "打开游戏站"
+msgstr "打开游戏站"
+
+msgid "把同名图片放进 covers/ 目录即作为封面"
+msgstr "把同名图片放进 covers/ 目录即作为封面"
+
+msgid "把模拟器核心下载到路由器 ✓ 之后内网闪电加载 + 断网也能玩 ✓（首次约几百 MB，后台慢慢下 ✓）"
+msgstr "把模拟器核心下载到路由器 ✓ 之后内网闪电加载 + 断网也能玩 ✓（首次约几百 MB，后台慢慢下 ✓）"
+
+msgid "掌上蛇"
+msgstr "掌上蛇"
+
+msgid "支持大文件流式上传 ✓ ZIP 自动解压 ✓ 也可以直接把文件丢进目录 ✓"
+msgstr "支持大文件流式上传 ✓ ZIP 自动解压 ✓ 也可以直接把文件丢进目录 ✓"
+
+msgid "放到哪个平台："
+msgstr "放到哪个平台："
+
+msgid "数据根目录"
+msgstr "数据根目录"
+
+msgid "显示封面图"
+msgstr "显示封面图"
+
+msgid "未知"
+msgstr "未知"
+
+msgid "本地没有的机型从这里加载"
+msgstr "本地没有的机型从这里加载"
+
+msgid "模拟器资源包（本地化）"
+msgstr "模拟器资源包（本地化）"
+
+msgid "正在取清单"
+msgstr "正在取清单"
+
+msgid "正在进入游戏站…"
+msgstr "正在进入游戏站…"
+
+msgid "游戏 "
+msgstr "游戏 "
+
+msgid "游戏 / 封面 / 金手指 / 存档都放这里，建议放大容量分区"
+msgstr "游戏 / 封面 / 金手指 / 存档都放这里，建议放大容量分区"
+
+msgid "游戏站"
+msgstr "游戏站"
+
+msgid "状态："
+msgstr "状态："
+
+msgid "街机"
+msgstr "街机"
+
+msgid "让路由器变成怀旧游戏站：游戏放在路由器上 ✓ 手机 / 电脑 / 平板打开浏览器就能玩 ✓"
+msgstr "让路由器变成怀旧游戏站：游戏放在路由器上 ✓ 手机 / 电脑 / 平板打开浏览器就能玩 ✓"
+
+msgid "请先选文件"
+msgstr "请先选文件"
+
+msgid "读取中…"
+msgstr "读取中…"
+
+msgid "资源包状态"
+msgstr "资源包状态"
+
+msgid "还没下载过"
+msgstr "还没下载过"
+
+msgid "进度："
+msgstr "进度："
+
+msgid "雅达利 2600"
+msgstr "雅达利 2600"
+
+msgid "雅达利 7800"
+msgstr "雅达利 7800"
+
+msgid "🎮 怀旧游戏 · 设置"
+msgstr "🎮 怀旧游戏 · 设置"
+
+msgid "🎮 进入游戏站（新窗口）"
+msgstr "🎮 进入游戏站（新窗口）"
+
+msgid "怀旧游戏"
+msgstr "怀旧游戏"
+
+msgid "① 设置"
+msgstr "① 设置"
+
+msgid "② 游戏站"
+msgstr "② 游戏站"
