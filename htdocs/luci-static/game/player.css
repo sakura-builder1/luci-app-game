@@ -81,3 +81,6 @@ code{background:rgba(255,255,255,.08);padding:.1em .4em;border-radius:5px;font-s
 	.panel{width:100vw}
 	#tipbar{display:none}
 }
+
+/* ── 修复：display:flex 会覆盖 HTML 的 hidden 属性 ✗ 导致弹窗/面板关不掉 ✓ ── */
+[hidden] { display: none !important; }

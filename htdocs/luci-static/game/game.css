@@ -122,3 +122,6 @@ a{color:var(--rg-pink2);text-decoration:none}
 	.rg-brand span{display:none}
 	.rg-tabs{order:3;width:100%}
 }
+
+/* ── 修复：display:flex 会覆盖 HTML 的 hidden 属性 ✗ 导致弹窗/面板关不掉 ✓ ── */
+[hidden] { display: none !important; }
