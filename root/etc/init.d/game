@@ -1,6 +1,9 @@
 
-ensure_config() {
-	[ -f /etc/config/game ] && return 0
+#!/bin/sh /etc/rc.common
+# 让 /opt/game 整棵树能被 uhttpd 访问（roms/covers/cheats/saves/assets 一次搞定）
+
+# ── 配置自愈：文件丢了自动重建 ✓（conffiles 之外的第二道保险 ✓）──
+[ -f /etc/config/game ] || {
 	mkdir -p /etc/config
 	cat > /etc/config/game <<'EOFCFG'
 
@@ -14,10 +17,9 @@ config game 'main'
 	option show_covers '1'
 	option show_recent '1'
 EOFCFG
-	return 0
 }
-#!/bin/sh /etc/rc.common
-# 让 /opt/game 整棵树能被 uhttpd 访问（roms/covers/cheats/saves/assets 一次搞定）
+
+
 START=99
 STOP=10
 USE_PROCD=1
