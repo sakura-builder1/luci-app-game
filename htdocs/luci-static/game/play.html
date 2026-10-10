@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#100d16">
+<title>游戏站 · 游玩中</title>
+<link rel="stylesheet" href="game.css">
+<link rel="stylesheet" href="player.css">
+</head>
+<body class="rg-play">
+
+<div id="bar">
+	<button id="b-back" class="rg-btn" title="返回游戏库">← 返回</button>
+	<div id="b-title" class="rg-pname">游戏</div>
+	<div class="rg-sp"></div>
+	<button id="b-save" class="rg-btn" title="即时存档（F2）">💾 存档</button>
+	<button id="b-load" class="rg-btn" title="读取存档（F3）">📂 读档</button>
+	<button id="b-cheat" class="rg-btn" title="金手指（F4）">🪄 金手指</button>
+	<button id="b-keys" class="rg-btn" title="键盘操作">⌨️ 按键</button>
+	<button id="b-pad" class="rg-btn" title="手柄检测">🎮 手柄</button>
+	<button id="b-full" class="rg-btn" title="全屏（F8）">⛶ 全屏</button>
+</div>
+
+<div id="stage">
+	<div id="canvas"></div>
+	<div id="splash">
+		<div class="rg-spin"></div>
+		<div id="splash-msg">正在准备模拟器…</div>
+		<div id="splash-sub" class="rg-dim"></div>
+	</div>
+</div>
+
+<div id="tipbar" class="rg-dim">
+	快捷键：F2 存档 · F3 读档 · F4 金手指 · F8 全屏 　|　 手机可直接触摸屏幕虚拟按键 ✓
+</div>
+
+<!-- ============ 面板：金手指 ============ -->
+<aside id="p-cheat" class="panel">
+	<div class="panel-top"><b>🪄 金手指</b><button class="rg-btn panel-x" data-close>✕</button></div>
+	<div class="panel-body">
+		<div id="cheat-list"></div>
+		<div class="rg-sep"></div>
+		<div class="rg-dim" style="font-size:.85em;line-height:1.8">
+			格式与 RetroArch 一致 ✓ 例如：<br>
+			<code>cheat0_desc = "无限命"</code><br>
+			<code>cheat0_code = "AAAA-BBBB"</code>
+		</div>
+		<details style="margin-top:.8em">
+			<summary class="rg-dim">➕ 添加一条金手指</summary>
+			<div class="rg-col">
+				<input id="ch-desc" class="rg-input" placeholder="说明，如：无限命">
+				<input id="ch-code" class="rg-input" placeholder="代码，如：AAAA-BBBB（多条用 + 连接）">
+				<button id="ch-add" class="rg-btn rg-primary">添加</button>
+			</div>
+		</details>
+		<div class="panel-foot">
+			<button id="ch-save" class="rg-btn rg-primary">保存金手指</button>
+			<button id="ch-reload" class="rg-btn">重新载入游戏</button>
+		</div>
+	</div>
+</aside>
+
+<!-- ============ 面板：键盘 ============ -->
+<aside id="p-keys" class="panel">
+	<div class="panel-top"><b>⌨️ 键盘操作</b><button class="rg-btn panel-x" data-close>✕</button></div>
+	<div class="panel-body">
+		<h4>本插件快捷键</h4>
+		<table class="rg-tab-t">
+			<tr><td>F2</td><td>即时存档到路由器</td></tr>
+			<tr><td>F3</td><td>从路由器读档</td></tr>
+			<tr><td>F4</td><td>打开 / 关闭金手指</td></tr>
+			<tr><td>F8</td><td>全屏切换</td></tr>
+		</table>
+		<h4>默认游戏按键（EmulatorJS）</h4>
+		<table class="rg-tab-t">
+			<tr><td>↑ ↓ ← →</td><td>方向（十字键）</td></tr>
+			<tr><td>Z</td><td>A 键</td></tr>
+			<tr><td>X</td><td>B 键</td></tr>
+			<tr><td>A / S</td><td>Y / X 键（SFC 等）</td></tr>
+			<tr><td>Q / W</td><td>L / R 肩键</td></tr>
+			<tr><td>Enter</td><td>Start</td></tr>
+			<tr><td>Shift（右）</td><td>Select</td></tr>
+		</table>
+		<p class="rg-dim" style="font-size:.85em;line-height:1.8">
+			想自己改键 ✓ 点模拟器自带界面里的 <b>齿轮 ⚙ → Control Settings</b> ✓ 改完自动记住 ✓。换到电脑上也是同一套 ✓。
+		</p>
+	</div>
+</aside>
+
+<!-- ============ 面板：手柄 ============ -->
+<aside id="p-pad" class="panel">
+	<div class="panel-top"><b>🎮 手柄检测</b><button class="rg-btn panel-x" data-close>✕</button></div>
+	<div class="panel-body">
+		<div id="pad-status" class="rg-dim">等待手柄… 插上后按任意键即可唤醒 ✓</div>
+		<div id="pad-vis"></div>
+		<p class="rg-dim" style="font-size:.85em;line-height:1.8">
+			手柄即插即用 ✓ 无需配置 ✓ 支持 Xbox / PS / Switch 手柄 ✓<br>
+			双打：插两个手柄，第二个手柄自动对应 2P ✓
+		</p>
+	</div>
+</aside>
+
+<script src="lib.js"></script>
+<script src="player.js"></script>
+</body>
+</html>

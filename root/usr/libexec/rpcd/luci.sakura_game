@@ -145,12 +145,15 @@ cheat_set)
 	IN=$(cat); json_load "$IN" >/dev/null 2>&1
 	json_get_var p path; json_get_var t text
 	case "$p" in ""|/*|*..*) fail "非法路径"; exit 0 ;; esac
-	_c="$(gdir)/cheats/$(basename "$p").cht"
+	_bn=$(basename "$p")
+	_c="$(gdir)/cheats/$_bn.cht"
+	_s="$(gdir)/roms/$p.cht"          # 与 ROM 同名同目录 ✓ EmulatorJS 直接读它 ✓
 	if [ -n "$t" ]; then
 		mkdir -p "$(gdir)/cheats"
 		printf '%s\n' "$t" > "$_c"
+		_md=$(dirname "$_s"); [ -d "$_md" ] && printf '%s\n' "$t" > "$_s"
 	else
-		rm -f "$_c"
+		rm -f "$_c" "$_s"
 	fi
 	ok
 	;;

@@ -11,6 +11,7 @@ CFG=game
 	uci set $CFG.main.asset_source='https://cdn.emulatorjs.org/stable/data/'
 	uci set $CFG.main.show_covers='1'
 	uci set $CFG.main.show_recent='1'
+	uci set $CFG.main.upload_key="$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')"
 	uci commit $CFG
 }
 

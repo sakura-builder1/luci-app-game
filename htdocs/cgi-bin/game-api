@@ -68,6 +68,55 @@ case "$m" in
 		hdr; json_init; json_add_boolean ok 1; json_add_boolean valid "$([ -z "$KEY" ] || [ "$k" = "$KEY" ] && echo 1 || echo 0)"; json_dump
 		;;
 
+	state_put)
+		need_key
+		p=$(urldec "$(getq p)"); slot=$(getq slot)
+		case "$p" in ""|/*|*..*) hdr; json_init; json_add_boolean ok 0; json_add_string msg "非法路径"; json_dump; exit 0 ;; esac
+		case "$slot" in ""|*[!0-9]*) slot=1 ;; esac
+		SD=/opt/game/saves; mkdir -p "$SD"
+		sf=$(printf '%s' "$p" | sed 's#/#__#g')
+		cat > "$SD/$sf.slot$slot.state"
+		sz=$(wc -c < "$SD/$sf.slot$slot.state" 2>/dev/null || echo 0)
+		hdr; json_init; json_add_boolean ok 1; json_add_int size "$sz"; json_add_string msg "已存档（槽 $slot · ${sz} 字节）"; json_dump
+		;;
+	state_get)
+		p=$(urldec "$(getq p)"); slot=$(getq slot)
+		case "$p" in ""|/*|*..*) printf 'Content-Type: application/json\r\n\r\n{"ok":false}\n'; exit 0 ;; esac
+		case "$slot" in ""|*[!0-9]*) slot=1 ;; esac
+		sf=$(printf '%s' "$p" | sed 's#/#__#g')
+		sf="/opt/game/saves/$sf.slot$slot.state"
+		if [ -f "$sf" ]; then
+			printf 'Content-Type: application/octet-stream\r\nCache-Control: no-store\r\nContent-Length: %s\r\n\r\n' "$(wc -c < "$sf")"
+			cat "$sf"
+		else
+			printf 'Content-Type: application/json\r\n\r\n{"ok":false,"msg":"没有存档"}\n'
+		fi
+		exit 0
+		;;
+	state_list)
+		p=$(urldec "$(getq p)")
+		sf=$(printf '%s' "$p" | sed 's#/#__#g')
+		hdr; json_init; json_add_array states
+		for n in 1 2 3 4 5; do
+			f2="/opt/game/saves/$sf.slot$n.state"
+			if [ -f "$f2" ]; then
+				json_add_object
+				json_add_int slot "$n"
+				json_add_int size "$(wc -c < "$f2")"
+				json_add_int mtime "$(stat -c %Y "$f2" 2>/dev/null || echo 0)"
+				json_close_object
+			fi
+		done
+		json_close_array; json_dump
+		;;
+	state_del)
+		need_key
+		p=$(urldec "$(getq p)"); slot=$(getq slot)
+		case "$slot" in ""|*[!0-9]*) slot=1 ;; esac
+		sf=$(printf '%s' "$p" | sed 's#/#__#g')
+		rm -f "/opt/game/saves/$sf.slot$slot.state"
+		hdr; json_init; json_add_boolean ok 1; json_dump
+		;;
 	play)   # 记录最近游玩（写 playlog）
 		p=$(urldec "$(getq p)")
 		n=$(urldec "$(getq n)")
