@@ -14,12 +14,12 @@ var callAssets  = rpc.declare({ object: 'luci.sakura_game', method: 'assets_fetc
 var callAssetsSt= rpc.declare({ object: 'luci.sakura_game', method: 'assets_status' });
 var callKey     = rpc.declare({ object: 'luci.sakura_game', method: 'key', params: [ 'action' ] });
 
+/* ★ 只列常用平台 ✓ 其余平台（SMS/GG/SegaCD/32X/雅达利/Lynx/PCE/掌上蛇/WonderSwan/VB）
+   插件仍然支持 ✗ 已有游戏照常显示 ✓ 只是上传时不再列出，免得眼花 ✓ */
 var PLATFORMS = [
 	['nes',_('FC 红白机')],['snes',_('SFC 超任')],['gb',_('GB 掌机')],['gbc','GBC'],['gba','GBA'],
-	['nds','NDS'],['n64','N64'],['psx','PS1'],['psp','PSP'],['segaMD',_('MD 世嘉')],['segaMS','SMS'],
-	['segaGG','GG'],['segaCD','Sega CD'],['sega32x','32X'],['atari2600',_('雅达利 2600')],
-	['atari7800',_('雅达利 7800')],['lynx','Atari Lynx'],['pce',_('PCE 引擎')],['ngp',_('掌上蛇')],
-	['ws','WonderSwan'],['vb','Virtual Boy'],['arcade',_('街机')],['bios',_('BIOS 文件（PS1 等）')]
+	['nds','NDS'],['n64','N64'],['psx','PS1'],['psp','PSP'],
+	['segaMD',_('MD 世嘉')],['arcade',_('街机')],['bios',_('BIOS 文件（PS1 等）')]
 ];
 
 function doUpload(file, plat, key, bar, log, btn) {
