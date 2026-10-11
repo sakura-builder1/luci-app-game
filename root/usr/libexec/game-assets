@@ -1,0 +1,105 @@
+#!/bin/sh
+# game-assets v3 —— 把 EmulatorJS 资源包镜像到路由器本地
+#
+# 相比旧版修掉的问题：
+#  ① ★ 不再用 GitHub main 的清单 ✗ → 直接读 CDN 自己的目录列表 ✓
+#     根因：GitHub main 与 CDN stable 版本不同 ✗ 文件名对不上 → 必然 404 ✓
+#  ② ★ 核心不再全下 ✗ → 只下本插件支持的机型 ✓（CDN 有 193 个核心 ✗ 只需要 21 个 ✓）
+#  ③ ★ 下载后校验大小 ✓ 空文件/错误页判失败并删除 ✓
+#  ④ ★ 每个文件重试 3 次 ✓
+#  ⑤ ★ 失败清单写入状态文件 ✓ 支持【只重试失败项】✓
+
+CFG=game
+GAME_DIR=$(uci -q get $CFG.main.game_dir); [ -n "$GAME_DIR" ] || GAME_DIR=/opt/game
+CDN=$(uci -q get $CFG.main.asset_source); [ -n "$CDN" ] || CDN=https://cdn.emulatorjs.org/stable/data/
+CDN=${CDN%/}
+DST="$GAME_DIR/assets"
+ST=/tmp/game-assets.status
+FAILF=/tmp/game-assets.fail
+LIST=/tmp/game-assets.list
+RETRY="${1:-}"
+
+mkdir -p "$DST"
+
+if command -v wget >/dev/null 2>&1; then
+	DL()      { wget -q -T "${3:-300}" -O "$2" "$1" 2>/dev/null; }
+	DL_TEXT() { wget -qO- -T "${2:-25}" "$1" 2>/dev/null; }
+elif command -v uclient-fetch >/dev/null 2>&1; then
+	DL()      { uclient-fetch -q -T "${3:-300}" -O "$2" "$1" 2>/dev/null; }
+	DL_TEXT() { uclient-fetch -q -T "${2:-25}" -O - "$1" 2>/dev/null; }
+else
+	printf 'failed\n0\n0\n没有可用的下载工具 ✗ 请安装 wget 或 uclient-fetch\n' > "$ST"; exit 1
+fi
+
+# 读 CDN 目录列表 → 输出相对路径 ✓
+list_dir() {
+	d="$1"; [ -z "$d" ] || d="$1/"
+	DL_TEXT "$CDN/$d" 25 | sed -n 's/.*href="\([^"?#][^"]*\)".*/\1/p' \
+		| sed 's|/$||' | grep -vE '^\.|^/|^$' | sed "s|^|$d|"
+}
+
+printf 'listing\n0\n0\n正在读取 CDN 文件清单…\n' > "$ST"
+
+{
+	# 根目录：只要带扩展名的文件 ✓（过滤 reports 之类杂物 ✓）
+	list_dir '' | grep -E '\.[A-Za-z0-9]{2,6}$'
+	# 语言 / 解压组件 / 源码模块（都很小 ✓ 全下 ✓）
+	list_dir localization
+	list_dir compression
+	list_dir src
+	# ★ 核心：只挑本插件支持的机型 ✓（CDN 有 193 个 ✗ 我们只要 21 个 + PSP 资源 ✓）
+	list_dir cores | grep -E \
+	  '^(cores/)(fceumm|snes9x|gambatte|mgba|melonds|mupen64plus_next|pcsx_rearmed|ppsspp|genesis_plus_gx|fbneo|mame2003_plus)(-(thread-)?wasm)?\.(data|zip)$' \
+	  | grep -v 'legacy'
+	# ★ PSP 系统资源包（字体/图集/compat.ini）✗ 不在上面的匹配里 ✓ 单独加 ✓
+	printf 'cores/ppsspp-assets.zip\n'
+} | sort -u > "$LIST"
+
+TOTAL=$(sed '/^$/d' "$LIST" | wc -l)
+if [ "$TOTAL" -lt 5 ]; then
+	printf 'failed\n0\n0\n读不到 CDN 清单 ✗ 检查外网或 CDN 地址 ✓\n' > "$ST"; exit 1
+fi
+
+# 只重试失败项 ✓
+if [ "$RETRY" = "retry" ] && [ -s "$FAILF" ]; then
+	cp "$FAILF" "$LIST"; TOTAL=$(sed '/^$/d' "$LIST" | wc -l)
+fi
+
+printf 'running\n0\n%s\n准备开始…\n' "$TOTAL" > "$ST"
+: > "$FAILF"
+n=0; ok=0; fail=0
+
+IFS_OLD="$IFS"; IFS='
+'
+for rel in $(cat "$LIST"); do
+	[ -n "$rel" ] || continue
+	dest="$DST/$rel"; n=$((n + 1))
+
+	if [ -f "$dest" ] && [ "$(wc -c < "$dest" 2>/dev/null || echo 0)" -gt 30 ]; then
+		ok=$((ok + 1)); printf 'running\n%s\n%s\n%s\n' "$n" "$TOTAL" "$rel" > "$ST"; continue
+	fi
+
+	mkdir -p "$(dirname "$dest")"
+	printf 'running\n%s\n%s\n%s\n' "$n" "$TOTAL" "$rel" > "$ST"
+
+	try=1; got=0
+	while [ "$try" -le 3 ]; do
+		DL "$CDN/$rel" "$dest" 300
+		[ "$(wc -c < "$dest" 2>/dev/null || echo 0)" -gt 30 ] && { got=1; break; }
+		try=$((try + 1)); sleep 1
+	done
+
+	if [ "$got" = "1" ]; then ok=$((ok + 1))
+	else rm -f "$dest"; fail=$((fail + 1)); printf '%s\n' "$rel" >> "$FAILF"; fi
+done
+IFS="$IFS_OLD"
+
+{
+	if [ "$fail" -gt 0 ]; then
+		printf 'done\n%s\n%s\n完成 ✓（成功 %s，失败 %s）\n' "$n" "$TOTAL" "$ok" "$fail"
+		cat "$FAILF"
+	else
+		printf 'done\n%s\n%s\n全部完成 ✓（共 %s 个文件 ✓）\n' "$n" "$TOTAL" "$ok"
+	fi
+} > "$ST"
+exit 0

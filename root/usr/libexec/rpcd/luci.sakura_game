@@ -85,7 +85,7 @@ call)
 		ok
 		;;
 	assets_fetch)
-		start-stop-daemon -S -b -q -x /usr/libexec/game-assets 2>/dev/null
+		start-stop-daemon -S -b -q -x /usr/libexec/game-assets retry 2>/dev/null
 		json_init; json_add_boolean ok 1
 		json_add_string msg "已开始下载 ✓ 可边下边玩（核心会先从 CDN 走）"; json_dump
 		;;
@@ -96,7 +96,13 @@ call)
 			json_add_string state "$(sed -n 1p "$ST")"
 			json_add_int done "$(sed -n 2p "$ST" 2>/dev/null || echo 0)"
 			json_add_int total "$(sed -n 3p "$ST" 2>/dev/null || echo 0)"
-			json_add_string current "$(sed -n 4p "$ST" 2>/dev/null)"
+				json_add_string current "$(sed -n 4p "$ST" 2>/dev/null)"
+			json_add_array fails
+			tail -n +5 "$ST" 2>/dev/null | sed '/^$/d' | while read -r _f; do
+				json_add_string "" "$_f"
+			done
+			json_close_array
+			json_add_int failcount "$(tail -n +5 "$ST" 2>/dev/null | sed '/^$/d' | wc -l)"
 		else
 			json_add_string state "none"; json_add_int done 0; json_add_int total 0
 			json_add_string current ""

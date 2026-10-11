@@ -212,5 +212,14 @@ return view.extend({
 		};
 
 		return m.render();
+		/* ★ 资源包失败项：列出来 + 说明可重试 ✓ */
+		if (r && r.failcount > 0) {
+			info.appendChild(E('div', { 'style': 'margin-top:.4em;color:#c33;font-size:.85em' },
+				[ _('✗ 失败 ') + r.failcount + _(' 个 — 再点上面的按钮即可重试 ✓ 已下好的会自动跳过 ✓') ]));
+			var box = E('div', { 'style': 'font-size:.78em;max-height:9em;overflow:auto;background:rgba(0,0,0,.06);padding:.4em;border-radius:4px;margin-top:.3em' });
+			(r.fails || []).slice(0, 300).forEach(function (f) { box.appendChild(E('div', {}, [ f ])); });
+			info.appendChild(box);
+		}
+
 	}
 });
