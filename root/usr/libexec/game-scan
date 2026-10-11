@@ -11,7 +11,7 @@ COVER_DIR="$GAME_DIR/covers"
 is_plat() {
 	case "$1" in
 		nes|snes|gb|gbc|gba|nds|n64|psx|segaMD|segaMS|segaGG|segaCD|sega32x|\
-		atari2600|atari7800|lynx|pce|ngp|ws|vb|arcade|mame2003) return 0 ;;
+		atari2600|atari7800|lynx|pce|ngp|ws|vb|arcade|mame2003|psp) return 0 ;;
 		*) return 1 ;;
 	esac
 }
@@ -23,6 +23,7 @@ ext2plat() {
 		gb) echo gb ;; gbc) echo gbc ;; gba) echo gba ;;
 		nds) echo nds ;; n64|z64|v64) echo n64 ;;
 		cue|chd|pbp|iso|img) echo psx ;;
+		cso) echo psp ;;
 		md|gen|smd) echo segaMD ;; sms) echo segaMS ;; gg) echo segaGG ;;
 		a26) echo atari2600 ;; a78) echo atari7800 ;; lnx) echo lynx ;;
 		pce) echo pce ;; ngp|ngc) echo ngp ;; ws|wsc) echo ws ;; vb|vboy) echo vb ;;
@@ -41,6 +42,7 @@ plat_name() {
 		lynx) echo "Atari Lynx" ;; pce) echo "PCE 引擎" ;; ngp) echo "掌上蛇" ;;
 		ws) echo "WonderSwan" ;; vb) echo "Virtual Boy" ;;
 		arcade) echo "街机" ;; mame2003) echo "MAME 2003" ;;
+		psp) echo "PSP" ;;
 		*) echo "$1" ;;
 	esac
 }
@@ -59,7 +61,7 @@ json_init
 json_add_string root "$GAME_DIR"
 json_add_string web "/luci-static/game/fs"
 json_add_array platforms
-for p in nes snes gb gbc gba nds n64 psx segaMD segaMS segaGG segaCD sega32x \
+for p in nes snes gb gbc gba nds n64 psx psp segaMD segaMS segaGG segaCD sega32x \
          atari2600 atari7800 lynx pce ngp ws vb arcade mame2003; do
 	json_add_object
 	json_add_string key "$p"

@@ -16,7 +16,7 @@ var callKey     = rpc.declare({ object: 'luci.sakura_game', method: 'key', param
 
 var PLATFORMS = [
 	['nes',_('FC 红白机')],['snes',_('SFC 超任')],['gb',_('GB 掌机')],['gbc','GBC'],['gba','GBA'],
-	['nds','NDS'],['n64','N64'],['psx','PS1'],['segaMD',_('MD 世嘉')],['segaMS','SMS'],
+	['nds','NDS'],['n64','N64'],['psx','PS1'],['psp','PSP'],['segaMD',_('MD 世嘉')],['segaMS','SMS'],
 	['segaGG','GG'],['segaCD','Sega CD'],['sega32x','32X'],['atari2600',_('雅达利 2600')],
 	['atari7800',_('雅达利 7800')],['lynx','Atari Lynx'],['pce',_('PCE 引擎')],['ngp',_('掌上蛇')],
 	['ws','WonderSwan'],['vb','Virtual Boy'],['arcade',_('街机')],['bios',_('BIOS 文件（PS1 等）')]

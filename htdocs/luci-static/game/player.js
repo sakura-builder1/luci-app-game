@@ -73,6 +73,8 @@
 		window.EJS_backgroundColor = '#100d16';
 		window.EJS_color = '#e07aa6';
 		window.EJS_lang = 'zh-CN';
+		/* ★ PSP 核心(ppsspp)必须开多线程 ✗ 官方要求 EJS_threads = true */
+		if (PLAT === 'psp') window.EJS_threads = true;
 		if (PLAT === 'psx') window.EJS_biosUrl = 'fs/roms/bios/scph5501.bin';
 		if (PLAT === 'segaCD') window.EJS_biosUrl = 'fs/roms/bios/bios_CD_U.bin';
 
