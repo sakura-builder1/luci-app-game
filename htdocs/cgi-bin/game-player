@@ -1,0 +1,21 @@
+#!/bin/sh
+# 游戏播放器入口 —— 关键：给 play.html 挂上【跨源隔离】响应头 ✗
+# 原因：PSP(ppsspp)/3DS 这类核心是纯多线程的 ✗
+#       多线程需要 SharedArrayBuffer ✗
+#       而 SharedArrayBuffer 只有在【跨源隔离】的页面才可用 ✓
+#       → 需要这两个头 ✓（EJS 官方明确要求 ✓）
+# 静态文件没法加头 ✗ 所以走 CGI ✓
+
+F=/www/luci-static/game/play.html
+
+printf 'Content-Type: text/html; charset=utf-8\r\n'
+printf 'Cache-Control: no-store\r\n'
+printf 'Cross-Origin-Opener-Policy: same-origin\r\n'
+printf 'Cross-Origin-Embedder-Policy: require-corp\r\n'
+printf '\r\n'
+
+if [ -f "$F" ]; then
+    cat "$F"
+else
+    printf '<!doctype html><meta charset="utf-8"><p>缺少 play.html ✗ 请重装插件</p>'
+fi

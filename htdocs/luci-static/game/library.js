@@ -23,7 +23,7 @@
 
 	function play(g) {
 		RG.api('play', { p: g.path, n: display(g) });
-		window.location.href = 'play.html?p=' + encodeURIComponent(g.path)
+		window.location.href = '/cgi-bin/game-player?p=' + encodeURIComponent(g.path)
 			+ '&n=' + encodeURIComponent(display(g))
 			+ '&c=' + encodeURIComponent(RG.core(g.platform))
 			+ '&plat=' + encodeURIComponent(g.platform);
