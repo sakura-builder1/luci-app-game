@@ -24,6 +24,46 @@
 			'常见原因：外网不通 / CDN 被墙 ✗ → 请在「设置」里打开发资源包下载，或换个网络再试 ✓';
 	}
 
+	/* ---------------- 体积 / 进度 / 预取 ---------------- */
+	var ROM_SIZE = 0;
+	var PREFETCH_MIN = 32 * 1024 * 1024;   /* ≥32MB 才走进度条预取 ✓ 小游戏直连 ✓ */
+
+	function fmtSize(b) {
+		if (!b) return '';
+		if (b >= 1073741824) return (b / 1073741824).toFixed(2) + ' GB';
+		if (b >= 1048576)    return (b / 1048576).toFixed(1) + ' MB';
+		return (b / 1024).toFixed(0) + ' KB';
+	}
+	function splashBar(pct) {
+		var w = document.getElementById('splash-bar');
+		if (!w) return;
+		if (pct == null) { w.classList.add('hide'); return; }
+		w.classList.remove('hide');
+		w.firstElementChild.style.width = Math.max(0, Math.min(100, pct)).toFixed(1) + '%';
+	}
+
+	/* 大文件用 XHR 预取 ✗ 这样才有进度 ✓ 完成后交给 EJS 一个 blob ✓ */
+	function prefetchROM(cb) {
+		fetch(ROMURL, { method: 'HEAD', cache: 'no-store' }).then(function (r) {
+			var n = parseInt(r.headers.get('content-length') || '0', 10) || 0;
+			ROM_SIZE = n;
+			if (n < PREFETCH_MIN) { cb(ROMURL); return; }
+			var x = new XMLHttpRequest();
+			x.open('GET', ROMURL, true);
+			x.responseType = 'blob';
+			x.onprogress = function (e) {
+				if (!e.lengthComputable) return;
+				var p = e.loaded / e.total * 100;
+				splashMsg('正在下载游戏… ' + fmtSize(e.loaded) + ' / ' + fmtSize(e.total),
+					'已完成 ' + p.toFixed(1) + '% ✓ 请稍候（超大文件建议改用 RetroArch 本地玩 ✓）');
+				splashBar(p);
+			};
+			x.onload = function () { splashBar(null); cb(URL.createObjectURL(x.response)); };
+			x.onerror = function () { splashBar(null); failSplash('下载游戏镜像失败 ✗ 检查网络后重试 ✓'); };
+			x.send();
+		}).catch(function () { cb(ROMURL); });
+	}
+
 	/* ---------------- 面板开关 ---------------- */
 	function panel(id, force) {
 		var p = document.getElementById(id);
@@ -60,11 +100,17 @@
 	}
 
 	function boot(base) {
-		splashMsg('正在加载模拟器…', '使用路由器本地资源包 ✓（纯本地 · 不联网）');
+		prefetchROM(function (url) {
+		bootEJS(base, url);
+		});
+	}
+
+	function bootEJS(base, url) {
+		splashMsg('正在启动核心…', ROM_SIZE ? ('游戏体积 ' + fmtSize(ROM_SIZE)) : '');
 
 		window.EJS_player = '#canvas';
 		window.EJS_core = CORE;
-		window.EJS_gameUrl = ROMURL;
+		window.EJS_gameUrl = url;   /* ★ 可能是 blob（大文件预取后 ✓）*/
 		window.EJS_gameName = NAME;
 		window.EJS_gameID = 'rg_' + PATH.replace(/[^A-Za-z0-9]/g, '_').slice(-60);
 		window.EJS_pathtodata = base;
@@ -96,9 +142,20 @@
 				clearInterval(iv);
 				hideSplash();
 				RG.toast('🕹 开始吧：' + NAME);
-			} else if (Date.now() - t0 > 45000) {
-				clearInterval(iv);
-				failSplash('超时了（45 秒）✗ 本地资源包可能不完整');
+			} else {
+				/* ★ 自适应超时：按体积给足时间 ✗ 不再写死 45 秒 ✓ */
+				var mb = ROM_SIZE / 1048576;
+				var limit = Math.max(60000, Math.min(1800000, 45000 + mb * 1500));
+				var waited = Date.now() - t0;
+				if (waited > 6000) {
+					splashMsg('核心启动中… 已等待 ' + Math.round(waited / 1000) + ' 秒',
+						'上限 ' + Math.round(limit / 1000) + ' 秒 ✓ 文件越大等待越久是正常的 ✓');
+				}
+				if (waited > limit) {
+					clearInterval(iv);
+					failSplash('超时了（已等 ' + Math.round(waited / 1000) + ' 秒 ✗ 上限 '
+						+ Math.round(limit / 1000) + ' 秒）✗ 该文件较大 ✗ 建议用 RetroArch 本地玩 ✓');
+				}
 			}
 		}, 300);
 	}
