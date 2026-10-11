@@ -29,7 +29,7 @@ esac
 if [ -n "$dir" ]; then
 	case "$dir" in
 		nes|snes|gb|gbc|gba|nds|n64|psx|segaMD|segaMS|segaGG|segaCD|sega32x|\
-		atari2600|atari7800|lynx|pce|ngp|ws|vb|arcade|bios|psp) : ;;
+		atari2600|atari7800|lynx|pce|ngp|ws|vb|arcade|bios) : ;;
 		*) say 0 "未知平台目录：$dir" ;;
 	esac
 fi

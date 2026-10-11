@@ -18,8 +18,7 @@ var callKey     = rpc.declare({ object: 'luci.sakura_game', method: 'key', param
    插件仍然支持 ✗ 已有游戏照常显示 ✓ 只是上传时不再列出，免得眼花 ✓ */
 var PLATFORMS = [
 	['nes',_('FC 红白机')],['snes',_('SFC 超任')],['gb',_('GB 掌机')],['gbc','GBC'],['gba','GBA'],
-	['nds','NDS'],['n64','N64'],['psx','PS1'],['psp','PSP'],
-	['segaMD',_('MD 世嘉')],['arcade',_('街机')],['bios',_('BIOS 文件（PS1 等）')]
+	['nds','NDS'],['n64','N64'],['psx','PS1'],['segaMD',_('MD 世嘉')],['arcade',_('街机')],['bios',_('BIOS 文件（PS1 等）')]
 ];
 
 function doUpload(file, plat, key, bar, log, btn) {

@@ -47,12 +47,10 @@ printf 'listing\n0\n0\n正在读取 CDN 文件清单…\n' > "$ST"
 	list_dir localization
 	list_dir compression
 	list_dir src
-	# ★ 核心：只挑本插件支持的机型 ✓（CDN 有 193 个 ✗ 我们只要 21 个 + PSP 资源 ✓）
+	# ★ 核心：只挑本插件支持的机型 ✓（CDN 有 193 个 ✗ 我们只要 20 个 ✓）
 	list_dir cores | grep -E \
-	  '^(cores/)(fceumm|snes9x|gambatte|mgba|melonds|mupen64plus_next|pcsx_rearmed|ppsspp|genesis_plus_gx|fbneo|mame2003_plus)(-(thread-)?wasm)?\.(data|zip)$' \
+	  '^(cores/)(fceumm|snes9x|gambatte|mgba|melonds|mupen64plus_next|pcsx_rearmed|genesis_plus_gx|fbneo|mame2003_plus)(-(thread-)?wasm)?\.(data|zip)$' \
 	  | grep -v 'legacy'
-	# ★ PSP 系统资源包（字体/图集/compat.ini）✗ 不在上面的匹配里 ✓ 单独加 ✓
-	printf 'cores/ppsspp-assets.zip\n'
 } | sort -u > "$LIST"
 
 TOTAL=$(sed '/^$/d' "$LIST" | wc -l)

@@ -7,9 +7,9 @@
 	var PLAT = Q.get('plat') || CORE;
 	var LOCAL = 'fs/assets/';   /* 只走本地 ✓ 不联网 ✓ */
 	var el = RG.el, emu = null, ready = false;
-	/* ★ 跨源隔离检测 ✗ PSP/3DS 等多线程核心必须要有它 ✓ */
+	/* ★ 跨源隔离检测 ✓ 多线程核心（如 3DS）必须要有它 ✓ */
 	var SAB_OK = (typeof SharedArrayBuffer === 'function');
-	var NEEDS_THREADS = { psp: 1, '3ds': 1 };
+	var NEEDS_THREADS = { '3ds': 1 };   /* PSP 已下线 ✓ 只剩 3DS */
 
 	var ROMURL = 'fs/roms/' + PATH.split('/').map(encodeURIComponent).join('/');
 	document.title = NAME + ' · 怀旧游戏站';
@@ -112,7 +112,7 @@
 		if (NEEDS_THREADS[PLAT] && !SAB_OK) {
 			failSplash('这个核心需要多线程 ✗ 但当前页面拿不到 SharedArrayBuffer ✓');
 			document.getElementById('splash-sub').innerHTML =
-				'PSP/3DS 核心是纯多线程的 ✗ 需要浏览器开启跨源隔离 ✓<br>'
+				'3DS 等机型用的是多线程核心 ✗ 需要浏览器开启跨源隔离 ✓<br>'
 				'<b>两个办法任选其一 ✓</b><br>'
 				'① 用 <b>https://</b> 访问本机（最正规 ✓）<br>'
 				'② 或在本机浏览器打开：<br>'
@@ -134,8 +134,6 @@
 		window.EJS_backgroundColor = '#100d16';
 		window.EJS_color = '#e07aa6';
 		window.EJS_lang = 'zh-CN';
-		/* ★ PSP 核心(ppsspp)必须开多线程 ✗ 官方要求 EJS_threads = true */
-		if (PLAT === 'psp') window.EJS_threads = true;
 		if (PLAT === 'psx') window.EJS_biosUrl = 'fs/roms/bios/scph5501.bin';
 		if (PLAT === 'segaCD') window.EJS_biosUrl = 'fs/roms/bios/bios_CD_U.bin';
 

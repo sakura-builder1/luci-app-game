@@ -5,7 +5,7 @@ var RG = (function () {
 
 	var P = {
 		nes: 'FC 红白机', snes: 'SFC 超任', gb: 'GB 掌机', gbc: 'GBC', gba: 'GBA',
-		nds: 'NDS', n64: 'N64', psx: 'PS1', psp: 'PSP', segaMD: 'MD 世嘉', segaMS: 'SMS',
+		nds: 'NDS', n64: 'N64', psx: 'PS1', segaMD: 'MD 世嘉', segaMS: 'SMS',
 		segaGG: 'GG', segaCD: 'Sega CD', sega32x: '32X', atari2600: '雅达利 2600',
 		atari7800: '雅达利 7800', lynx: 'Atari Lynx', pce: 'PCE 引擎', ngp: '掌上蛇',
 		ws: 'WonderSwan', vb: 'Virtual Boy', arcade: '街机', mame2003: 'MAME 2003'
@@ -19,8 +19,7 @@ var RG = (function () {
 		sega32x: ['#6d4c41', '#3e2723'], atari2600: ['#795548', '#4e342e'],
 		atari7800: ['#5d4037', '#3e2723'], lynx: ['#37474f', '#263238'], pce: ['#ef6c00', '#e65100'],
 		ngp: ['#33691e', '#1b5e20'], ws: ['#455a64', '#263238'], vb: ['#b71c1c', '#7f0000'],
-		arcade: ['#e65100', '#bf360c'], mame2003: ['#e65100', '#bf360c'],
-		psp: ['#e62129', '#7a0d12']
+		arcade: ['#e65100', '#bf360c'], mame2003: ['#e65100', '#bf360c']
 	};
 
 	function key() { try { return localStorage.getItem(KEYID) || ''; } catch (e) { return ''; } }
