@@ -76,7 +76,11 @@ for f in $(find "$ROM_DIR" -type f 2>/dev/null); do
 	rel=${f#$ROM_DIR/}
 	case "$rel" in
 		bios/*|.*|*/.git/*) continue ;;
+		# ★ 上传临时目录（.unzip.NNN / .upload.NNN）里的东西永远不是游戏 ✗
+		*/.unzip.*/*|*/.upload.*/*|*/.unzip.*|*/.upload.*) continue ;;
 		*.txt|*.md|*.nfo|*.xml|*.dat|*.json|*.png|*.jpg|*.jpeg|*.webp|*.gif|*.db) continue ;;
+		# ★ 补漏：网址快捷方式 / 网页说明 / 系统垃圾 ✗ 这些不是游戏 ✓
+		*.url|*.URL|*.lnk|*.htm|*.html|*.webloc|*.desktop|*.DS_Store|*.ini|*.cfg) continue ;;
 		*.cht|*.sav|*.srm|*.state|*.ips|*.ups|*.bps|*.rtc|*.cht.txt) continue ;;
 	esac
 	top=$(printf '%s' "$rel" | cut -d/ -f1)

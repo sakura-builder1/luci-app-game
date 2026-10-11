@@ -63,7 +63,8 @@ case "$name" in
 '
 			for f in $(find "$zdir" -type f 2>/dev/null); do
 				bn=$(basename "$f")
-				case "$bn" in *.txt|*.nfo|*.md|*.jpg|*.png|*.url|*.db) continue ;; esac
+				case "$bn" in *.txt|*.nfo|*.md|*.jpg|*.jpeg|*.png|*.webp|*.gif|*.db) continue ;; esac
+				case "$bn" in *.url|*.URL|*.lnk|*.htm|*.html|*.webloc|*.ini|*.cfg|*.DS_Store) continue ;; esac
 				if mv -f "$f" "$target_dir/$bn" 2>/dev/null; then cnt=$((cnt + 1)); fi
 			done
 			IFS="$_oi"
