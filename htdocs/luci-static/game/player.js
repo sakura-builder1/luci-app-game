@@ -128,6 +128,7 @@
 		window.EJS_gameName = NAME;
 		window.EJS_gameID = 'rg_' + PATH.replace(/[^A-Za-z0-9]/g, '_').slice(-60);
 		window.EJS_pathtodata = base;
+	window.EJS_language = 'zh-CN';   /* ★ 强制中文 ✗ 否则会刷一堆 translation 警告 ✓ */
 		window.EJS_startOnLoaded = true;
 		window.EJS_volume = 0.8;
 		window.EJS_backgroundColor = '#100d16';
