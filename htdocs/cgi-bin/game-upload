@@ -48,6 +48,13 @@ if [ "$sz" -le 0 ]; then rm -f "$tmp"; say 0 "空文件"; fi
 case "$name" in
 	*.zip|*.ZIP)
 		zdir="$target_dir/.unzip.$$"
+			# ★ 街机平台的 zip 本身就是游戏本体 ✗ 解压会拆散 romset ✗
+			case "$dir" in
+				arcade|mame2003|mame)
+					mv -f "$tmp" "$target_dir/$name"
+					say 1 "已上传（街机 romset 保持 zip 原样 ✓）：$name"
+					;;
+			esac
 		mkdir -p "$zdir"
 		if command -v unzip >/dev/null 2>&1; then
 			unzip -o -q "$tmp" -d "$zdir" 2>/dev/null
