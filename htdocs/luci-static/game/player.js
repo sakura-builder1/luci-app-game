@@ -357,6 +357,28 @@
 		else if (e.key === 'F8') { e.preventDefault(); toggleFull(); }
 	});
 
+	/* ★ 全屏打开：fs=1 时自动进全屏 ✗
+	   浏览器铁律：requestFullscreen 必须由【用户手势】触发 ✗
+	   所以先自动试一次 ✓ 没成就在首次点击时补上 ✓ 绝不静默失效 ✓ */
+	function gotoFull() {
+		try {
+			if (!document.fullscreenElement) {
+				(document.documentElement.requestFullscreen
+					|| document.documentElement.webkitRequestFullscreen
+					|| function () {}).call(document.documentElement);
+			}
+		} catch (e) {}
+	}
+	if (Q.get('fs') === '1') {
+		setTimeout(function () {
+			gotoFull();
+			if (!document.fullscreenElement) {
+				RG.toast('🖱 点一下屏幕即可全屏 ✓');
+				document.addEventListener('click', function () { gotoFull(); }, { once: true });
+			}
+		}, 700);
+	}
+
 	/* ---------------- go ---------------- */
 	pickBase().then(function (base) {
 		if (!base) {

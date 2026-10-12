@@ -1,17 +1,22 @@
-/* 怀旧游戏 · 页②：直接把浏览器送到独立游戏站 */
+/* 怀旧游戏 · 页②：游戏库【嵌在 LuCI 里】打开 ✓ 不再把浏览器整个带走 ✓ */
 'use strict';
 'require view';
 'require uci';
+
+var VER = '20261012b';
 
 return view.extend({
 	load: function () { return uci.load('game'); },
 	render: function () {
 		var k = uci.get('game', 'main', 'upload_key') || '';
-		var url = '/luci-static/game/' + (k ? ('?k=' + encodeURIComponent(k)) : '');
-		location.replace(url);
-		return E('div', { 'style': 'padding:2em;text-align:center' }, [
-			E('p', {}, [ _('正在进入游戏站…') ]),
-			E('p', {}, [ E('a', { href: url }, [ _('如果没有自动跳转，点这里') ]) ])
-		]);
+		/* ★ 参数：embed=1 让游戏库知道自己被内嵌 ✓ v= 缓存戳防吃旧文件 ✓ */
+		var url = '/luci-static/game/?embed=1&v=20261012b'
+			+ (k ? ('&k=' + encodeURIComponent(k)) : '');
+		return E('iframe', {
+			'id': 'rg-frame',
+			'src': url,
+			'style': 'width:100%;height:calc(100vh - 190px);min-height:520px;'
+				+ 'border:0;border-radius:10px;display:block;background:transparent'
+		});
 	}
 });

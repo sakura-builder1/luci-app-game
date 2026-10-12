@@ -84,6 +84,8 @@ a{color:var(--rg-pink2);text-decoration:none}
 }
 .rg-empty code{background:rgba(255,255,255,.08);padding:.15em .45em;border-radius:6px;color:var(--rg-fg)}
 
+/* ★ 被 LuCI 内嵌时：藏掉重复入口 ✓（LuCI 菜单里已有「设置」✓）*/
+body.rg-embed .rg-foot a{display:none}
 .rg-foot{
 	display:flex;align-items:center;gap:1em;flex-wrap:wrap;
 	padding:1em;border-top:1px solid var(--rg-line);color:var(--rg-dim);font-size:.85em;

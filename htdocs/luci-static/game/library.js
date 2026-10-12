@@ -23,10 +23,16 @@
 
 	function play(g) {
 		RG.api('play', { p: g.path, n: display(g) });
-		window.location.href = '/cgi-bin/game-player?p=' + encodeURIComponent(g.path)
+		var url = '/cgi-bin/game-player?p=' + encodeURIComponent(g.path)
 			+ '&n=' + encodeURIComponent(display(g))
 			+ '&c=' + encodeURIComponent(RG.core(g.platform))
-			+ '&plat=' + encodeURIComponent(g.platform);
+			+ '&plat=' + encodeURIComponent(g.platform)
+			+ '&fs=1';                      /* ★ 参数：要求播放器全屏打开 ✓ */
+		/* ★ 新窗口铺满屏幕打开 ✓（fullscreen=yes 是窗口尺寸 ✓ 真全屏由播放器接管 ✓）*/
+		var w = window.open(url, 'rg_play',
+			'fullscreen=yes,menubar=no,toolbar=no,location=no,status=no');
+		if (w) { try { w.focus(); } catch (e) {} }
+		else { window.location.href = url; }   /* 弹窗被拦 → 退回当前页 ✓ 功能不丢 ✓ */
 	}
 
 	function ctxMenu(g, ev) {
