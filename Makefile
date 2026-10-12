@@ -4,8 +4,10 @@
 include $(TOPDIR)/rules.mk
 
 LUCI_TITLE:=LuCI Retro Game Station (怀旧游戏)
-LUCI_DESCRIPTION:=Turn your router into a retro game station: manage ROMs in LuCI and play them in any browser (NES/SNES/GB/GBA/MD/PS1/Arcade...). Supports covers, cheats, keyboard & gamepad mapping, and router-side save states.
+LUCI_DESCRIPTION:=Turn your router into a retro game station: manage ROMs in LuCI and play them in any browser. Supports covers, cheats, keyboard & gamepad mapping, and router-side save states. (AI-assisted development)
 LUCI_DEPENDS:=+luci-base +rpcd +uhttpd +libubox +jsonfilter +unzip
+PKG_LICENSE:=GPL-3.0-only
+PKG_LICENSE_FILES:=LICENSE
 PKG_VERSION:=1.0.20
 PKG_RELEASE:=1
 

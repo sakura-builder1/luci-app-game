@@ -3,6 +3,8 @@
 把路由器变成一台 **怀旧游戏站**：游戏放在路由器上，手机 / 电脑 / 平板打开浏览器就能玩。
 客户端**不用装任何东西**，模拟器跑在浏览器里（WebAssembly），路由器零算力压力。
 
+> 🤖 **AI 辅助开发**：本插件由 AI 辅助开发（人机协作），代码经人工审阅后发布。
+
 ## ✨ 功能
 
 ### 页① 设置
@@ -23,11 +25,6 @@
 | 💾 即时存档 | 存在路由器上，换台设备接着玩 |
 | ⌨️ 键盘操作 | 插件快捷键 + 默认键位说明（支持自定义改键） |
 | 🎮 手柄操作 | 即插即用（Xbox / PS / Switch），实时按键检测，支持双打 |
-
-## 🕹 支持的机种
-
-FC / SFC / GB / GBC / GBA / NDS / N64 / PS1 / MD / SMS / GG / SegaCD / 32X /
-雅达利 2600·7800 / Lynx / PCE / 掌上蛇 / WonderSwan / Virtual Boy / 街机（MAME）
 
 ## 📦 安装
 
@@ -62,4 +59,4 @@ opkg install luci-app-game_*.ipk
 
 ## 📄 许可
 
-MIT
+本项目采用 **GPL-3.0**（GNU General Public License v3.0）许可协议，详见 [LICENSE](LICENSE)。
