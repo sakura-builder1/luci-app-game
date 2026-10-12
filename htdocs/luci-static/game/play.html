@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#100d16">
 <title>游戏站 · 游玩中</title>
-<link rel="stylesheet" href="game.css?v=20261011">
-<link rel="stylesheet" href="player.css?v=20261011">
+<link rel="stylesheet" href="game.css?v=20261012">
+<link rel="stylesheet" href="player.css?v=20261012">
 </head>
 <body class="rg-play">
 
@@ -82,16 +82,23 @@
 			<tr><td>Z</td><td><b>○</b>　圆（通用 A 键）</td></tr>
 			<tr><td>A</td><td><b>△</b>　三角（通用 X 键）</td></tr>
 			<tr><td>S</td><td><b>□</b>　方块（通用 Y 键）</td></tr>
-			<tr><td>Q</td><td>L 肩键</td></tr>
-			<tr><td><b>E</b></td><td>R 肩键　<span class="rg-dim">（不是 W 哦）</span></td></tr>
+			<tr><td>Q</td><td>L1 肩键（左上）</td></tr>
+			<tr><td><b>E</b></td><td>R1 肩键（右上）　<span class="rg-dim">（不是 W 哦）</span></td></tr>
+			<tr><td><b>Tab</b></td><td>L2 扳机（左下）</td></tr>
+			<tr><td><b>R</b></td><td>R2 扳机（右下）　<span class="rg-dim">（是「扳机」✗ 不是「右」哦）</span></td></tr>
 			<tr><td>Enter</td><td>START</td></tr>
 			<tr><td><b>V</b></td><td>SELECT　<span class="rg-dim">（不是 Shift 哦）</span></td></tr>
 		</table>
 		<h4>模拟摇杆（若该机型支持）</h4>
 		<table class="rg-tab-t">
-			<tr><td>F / H</td><td>摇杆 左 / 右</td></tr>
-			<tr><td>T / G</td><td>摇杆 上 / 下</td></tr>
+			<tr><td>F / H</td><td>左摇杆 左 / 右</td></tr>
+			<tr><td>T / G</td><td>左摇杆 上 / 下</td></tr>
+			<tr><td>J / L</td><td>右摇杆 左 / 右</td></tr>
+			<tr><td>I / K</td><td>右摇杆 上 / 下</td></tr>
 		</table>
+		<p class="rg-dim" style="font-size:.85em;line-height:1.8">
+			L3 / R3（摇杆按下）：EmulatorJS 官方<b>默认不绑键</b> ✗ 需要就去 ⚙ 里自己设 ✓
+		</p>
 		<p class="rg-dim" style="font-size:.85em;line-height:1.8">
 			想自己改键 ✓ 点模拟器自带界面里的 <b>齿轮 ⚙ → Control Settings</b> ✓ 改完自动记住 ✓。换到电脑上也是同一套 ✓。
 		</p>
@@ -106,12 +113,13 @@
 		<div id="pad-vis"></div>
 		<p class="rg-dim" style="font-size:.85em;line-height:1.8">
 			手柄即插即用 ✓ 无需配置 ✓ 支持 Xbox / PS / Switch 手柄 ✓<br>
-			双打：插两个手柄，第二个手柄自动对应 2P ✓
+			双打：需插<b>两个手柄</b> ✓ 第 2 个手柄自动对应 2P ✓<br>
+			<span class="rg-dim">（键盘默认只有 1P ✗ 两人共用一个键盘暂时不行哦）</span>
 		</p>
 	</div>
 </aside>
 
-<script src="lib.js?v=20261011"></script>
-<script src="player.js?v=20261011"></script>
+<script src="lib.js?v=20261012"></script>
+<script src="player.js?v=20261012"></script>
 </body>
 </html>

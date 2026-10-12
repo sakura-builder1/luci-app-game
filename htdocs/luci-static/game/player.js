@@ -45,6 +45,13 @@
 		w.firstElementChild.style.width = Math.max(0, Math.min(100, pct)).toFixed(1) + '%';
 	}
 
+	/* ★ Blob URL 登记表：页面关闭时统一释放 ✗ 否则大 ROM 内存翻倍 ✓ */
+	var OBJS = [];
+	function keepURL(u) { OBJS.push(u); return u; }
+	window.addEventListener('beforeunload', function () {
+		OBJS.forEach(function (u) { try { URL.revokeObjectURL(u); } catch (e) {} });
+	});
+
 	/* 大文件用 XHR 预取 ✗ 这样才有进度 ✓ 完成后交给 EJS 一个 blob ✓ */
 	function prefetchROM(cb) {
 		fetch(ROMURL, { method: 'HEAD', cache: 'no-store' }).then(function (r) {
@@ -61,7 +68,7 @@
 					'已完成 ' + p.toFixed(1) + '% ✓ 请稍候（超大文件建议改用 RetroArch 本地玩 ✓）');
 				splashBar(p);
 			};
-			x.onload = function () { splashBar(null); cb(URL.createObjectURL(x.response)); };
+			x.onload = function () { splashBar(null); cb(keepURL(URL.createObjectURL(x.response))); };
 			x.onerror = function () { splashBar(null); failSplash('下载游戏镜像失败 ✗ 检查网络后重试 ✓'); };
 			x.send();
 		}).catch(function () { cb(ROMURL); });
@@ -81,7 +88,10 @@
 	});
 	document.getElementById('b-cheat').onclick = function () { if (panel('p-cheat')) loadCheats(); };
 	document.getElementById('b-keys').onclick = function () { panel('p-keys'); };
-	document.getElementById('b-pad').onclick = function () { panel('p-pad'); startPadPoll(); };
+	document.getElementById('b-pad').onclick = function () {
+		if (panel('p-pad')) startPadPoll();
+		else if (padTimer) { clearInterval(padTimer); padTimer = null; }
+	};
 	document.getElementById('b-back').onclick = function () { location.href = 'index.html'; };
 	document.getElementById('b-full').onclick = toggleFull;
 
@@ -91,8 +101,21 @@
 			(d.documentElement.requestFullscreen || function () {}).call(d.documentElement);
 			if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(function () {});
 		} else {
-			d.exitFullscreen.call(d);
+			if (d.exitFullscreen) d.exitFullscreen.call(d);
 		}
+	}
+
+	/* ★ 稳定且不撞车的 gameID ✗
+	   ≤60 字符：保持原样 ✓ 老存档不失效 ✓
+	   >60 字符：尾部截断 + 哈希兜底 ✓ 杜绝串档 ✓ */
+	function hashId(s) {
+		var h = 5381, i;
+		for (i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+		return (h >>> 0).toString(36);
+	}
+	function gameId(p) {
+		var safe = String(p).replace(/[^A-Za-z0-9]/g, '_');
+		return safe.length <= 60 ? ('rg_' + safe) : ('rg_' + safe.slice(-48) + '_' + hashId(p));
 	}
 
 	/* ---------------- 启动模拟器 ---------------- */
@@ -126,7 +149,7 @@
 		window.EJS_core = CORE;
 		window.EJS_gameUrl = url;   /* ★ 可能是 blob（大文件预取后 ✓）*/
 		window.EJS_gameName = NAME;
-		window.EJS_gameID = 'rg_' + PATH.replace(/[^A-Za-z0-9]/g, '_').slice(-60);
+		window.EJS_gameID = gameId(PATH);
 		window.EJS_pathtodata = base;
 	window.EJS_language = 'zh-CN';   /* ★ 强制中文 ✗ 否则会刷一堆 translation 警告 ✓ */
 		window.EJS_startOnLoaded = true;
@@ -284,6 +307,9 @@
 
 	/* ---------------- 手柄检测 ---------------- */
 	var padTimer = null;
+	/* Xbox 标准映射下的按钮名（浏览器 Gamepad API 规范）✓ */
+	var PADNAMES = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'View', 'Start',
+		'L3', 'R3', '↑', '↓', '←', '→', 'Guide'];
 	function startPadPoll() {
 		if (padTimer) return;
 		padTimer = setInterval(paintPads, 100);
@@ -306,7 +332,8 @@
 			]);
 			var btns = el('div', { class: 'pad-btns' });
 			p.buttons.forEach(function (b, n) {
-				btns.appendChild(el('span', { class: 'pad-b on'.replace(' on', b.pressed ? ' on' : '') }, [ String(n) ]));
+				btns.appendChild(el('span', { class: 'pad-b' + (b.pressed ? ' on' : '') },
+				[ (PADNAMES[n] ? PADNAMES[n] + ' ' : '') + n ]));
 			});
 			box.appendChild(btns);
 			var axes = el('div', { class: 'pad-ax' });
