@@ -121,11 +121,10 @@ return view.extend({
 		o = s.option(form.DummyValue, '_station', _('打开游戏站'));
 		o.cfgvalue = function () {
 			var wrap = E('div', {});
-			/* ★ 改为在 LuCI 内部跳转到「② 游戏站」标签（iframe 内嵌）✓ 不再新窗口全屏 ✓ */
 			wrap.appendChild(E('button', {
 				'class': 'btn cbi-button cbi-button-action',
-				'click': function () { location.href = L.url('admin/services/game/station'); }
-			}, [ _('🎮 打开游戏站（内嵌在 LuCI 中）') ]));
+				'click': function () { window.open('/luci-static/game/' + (key ? ('?k=' + encodeURIComponent(key)) : ''), '_blank'); }
+			}, [ _('🎮 进入游戏站（新窗口）') ]));
 			return wrap;
 		};
 
