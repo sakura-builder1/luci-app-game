@@ -26,13 +26,38 @@
 		var url = '/cgi-bin/game-player?p=' + encodeURIComponent(g.path)
 			+ '&n=' + encodeURIComponent(display(g))
 			+ '&c=' + encodeURIComponent(RG.core(g.platform))
-			+ '&plat=' + encodeURIComponent(g.platform)
-			+ '&fs=1';                      /* ★ 参数：要求播放器全屏打开 ✓ */
-		/* ★ 新窗口铺满屏幕打开 ✓（fullscreen=yes 是窗口尺寸 ✓ 真全屏由播放器接管 ✓）*/
-		var w = window.open(url, 'rg_play',
-			'fullscreen=yes,menubar=no,toolbar=no,location=no,status=no');
-		if (w) { try { w.focus(); } catch (e) {} }
-		else { window.location.href = url; }   /* 弹窗被拦 → 退回当前页 ✓ 功能不丢 ✓ */
+			+ '&plat=' + encodeURIComponent(g.platform);
+			/* ★ 改：不再拼接 &fs=1 ✗ 播放器不再自动进浏览器全屏 ✓
+			   想全屏的话，播放器自己带的全屏按钮还能点 ✓ */
+		mountPlayer(url, display(g));
+	}
+
+	/* ★ 内嵌播放：在当前页面里套一层 iframe ✓
+	   ✗ 不开新窗口 ✗ 不进浏览器 requestFullscreen ✓ 关掉就回游戏库 ✓ */
+	function mountPlayer(url, title) {
+		var old = document.getElementById('rg-pv');
+		if (old) old.remove();
+
+		var bar = el('div', { class: 'rg-pvbar' }, [
+			el('span', { class: 'rg-pvname' }, [ '▶ ' + title ]),
+			el('span', { class: 'rg-sp' }),
+			el('button', { class: 'rg-btn rg-pvx', onclick: close }, [ '✕ 关闭' ])
+		]);
+		var frame = el('iframe', {
+			class: 'rg-pvframe', src: url,
+			allow: 'autoplay; fullscreen; gamepad', allowfullscreen: ''
+		});
+		var box = el('div', { class: 'rg-pvbox' }, [ bar, frame ]);
+		var mask = el('div', { id: 'rg-pv', class: 'rg-pvmask' }, [ box ]);
+
+		function close() {
+			mask.remove();
+			document.removeEventListener('keydown', onKey);
+		}
+		function onKey(ev) { if (ev.key === 'Escape') close(); }
+
+		document.body.appendChild(mask);
+		document.addEventListener('keydown', onKey);
 	}
 
 	function ctxMenu(g, ev) {

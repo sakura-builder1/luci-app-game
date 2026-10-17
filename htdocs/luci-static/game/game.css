@@ -127,3 +127,28 @@ body.rg-embed .rg-foot a{display:none}
 
 /* ── 修复：display:flex 会覆盖 HTML 的 hidden 属性 ✗ 导致弹窗/面板关不掉 ✓ ── */
 [hidden] { display: none !important; }
+/* ================================================================
+   ★ 内嵌播放器层（2026-10-17 新增）
+   点游戏 → 在当前页面里套一层 iframe ✓
+   ✗ 不开新窗口 ✗ 不自动进浏览器全屏 ✓ 关掉就回游戏库 ✓
+   （播放器自带的「全屏」按钮仍可手动点 ✓ 功能不丢 ✓）
+   ================================================================ */
+.rg-pvmask { position: fixed; inset: 0; z-index: 9999; background: rgba(12,8,18,.72);
+	-webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+	display: flex; align-items: center; justify-content: center; padding: 2.2vh 2vw; }
+
+.rg-pvbox { width: 100%; max-width: 1180px; height: 100%; max-height: 88vh;
+	display: flex; flex-direction: column; border-radius: 12px; overflow: hidden;
+	background: #161020; box-shadow: 0 18px 60px rgba(0,0,0,.55); }
+
+.rg-pvbar { display: flex; align-items: center; gap: .6em; padding: .5em .8em;
+	background: #1e1730; color: #f2e9ff; font-size: .92em; }
+
+.rg-pvname { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.rg-pvframe { flex: 1; width: 100%; min-height: 0; border: 0; background: #000; display: block; }
+
+@media (max-width: 640px) {
+	.rg-pvmask { padding: 0; }
+	.rg-pvbox { max-width: none; max-height: none; height: 100%; border-radius: 0; }
+}
