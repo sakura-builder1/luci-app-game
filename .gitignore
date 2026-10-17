@@ -4,3 +4,5 @@ build_dir/
 .tmp/
 *.orig
 *.rej
+Makefile.bak-*
+*.bak-*
