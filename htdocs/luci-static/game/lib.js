@@ -1,7 +1,6 @@
 /* 游戏站公共层：接口调用 / 工具 / 平台定义 */
 var RG = (function () {
 	var FSPATH = 'fs/';
-	var KEYID = 'rg_key';
 
 	var P = {
 		nes: 'FC 红白机', snes: 'SFC 超任', gb: 'GB 掌机', gbc: 'GBC', gba: 'GBA',
@@ -22,16 +21,12 @@ var RG = (function () {
 		arcade: ['#e65100', '#bf360c'], mame2003: ['#e65100', '#bf360c']
 	};
 
-	function key() { try { return localStorage.getItem(KEYID) || ''; } catch (e) { return ''; } }
-	function setKey(k) { try { localStorage.setItem(KEYID, k); } catch (e) {} }
-
 	function api(m, params) {
 		var q = '?m=' + encodeURIComponent(m);
 		params = params || {};
 		Object.keys(params).forEach(function (k) {
 			if (params[k] != null) q += '&' + k + '=' + encodeURIComponent(params[k]);
 		});
-		if (key()) q += '&k=' + encodeURIComponent(key());
 		return fetch('/cgi-bin/game-api' + q, { cache: 'no-store' }).then(function (r) {
 			return r.json().catch(function () { return {}; });
 		}).catch(function () { return {}; });
@@ -43,7 +38,6 @@ var RG = (function () {
 		Object.keys(params).forEach(function (k) {
 			if (params[k] != null) q += '&' + k + '=' + encodeURIComponent(params[k]);
 		});
-		if (key()) q += '&k=' + encodeURIComponent(key());
 		return fetch('/cgi-bin/game-api' + q, { method: 'POST', body: body || '', cache: 'no-store' })
 			.then(function (r) { return r.json().catch(function () { return {}; }); })
 			.catch(function () { return {}; });
@@ -88,5 +82,5 @@ var RG = (function () {
 	}
 
 	return { api: api, post: post, fs: fs, core: core, hue: hue, size: size,
-		toast: toast, el: el, P: P, key: key, setKey: setKey, FSPATH: FSPATH };
+		toast: toast, el: el, P: P, FSPATH: FSPATH };
 })();

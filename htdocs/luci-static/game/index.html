@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1a1420">
 <title>🎮 怀旧游戏站</title>
-<link rel="stylesheet" href="game.css?v=20261017b">
+<link rel="stylesheet" href="game.css?v=20261017c">
 </head>
 <body class="rg-lib">
 
@@ -18,7 +18,6 @@
 	</div>
 	<input id="rg-q" class="rg-input rg-search" type="search" placeholder="搜索游戏…">
 	<button id="rg-refresh" class="rg-btn" title="重新扫描">↻</button>
-	<button id="rg-key" class="rg-btn" title="设置口令">🔑</button>
 </header>
 
 <div id="rg-chips" class="rg-chips"></div>
@@ -32,20 +31,8 @@
 	<a href="/cgi-bin/luci/admin/services/game/settings" class="rg-link">⚙ 设置</a>
 </footer>
 
-<div id="rg-keybox" class="rg-modal" hidden>
-	<div class="rg-modal-in">
-		<h3>🔑 设置口令</h3>
-		<p class="rg-dim">改名 / 收藏 / 删除 / 金手指需要口令 ✓ 在 LuCI 设置页可以查看 ✓</p>
-		<input id="rg-keyin" class="rg-input" type="text" placeholder="粘贴口令…">
-		<div class="rg-row">
-			<button id="rg-keysave" class="rg-btn rg-primary">保存</button>
-			<button id="rg-keyclose" class="rg-btn">关闭</button>
-		</div>
-	</div>
-</div>
-
-<script src="lib.js?v=20261017b"></script>
-<script src="library.js?v=20261017b"></script>
+<script src="lib.js?v=20261017c"></script>
+<script src="library.js?v=20261017c"></script>
 <script>
 /* ★ 内嵌模式：被 LuCI 用 iframe 套住时，藏掉重复的「设置」入口 ✓（LuCI 菜单里已经有了 ✓）*/
 if (new URLSearchParams(location.search).has('embed')) document.body.classList.add('rg-embed');

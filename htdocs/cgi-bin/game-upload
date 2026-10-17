@@ -1,5 +1,5 @@
 #!/bin/sh
-# 上传游戏（流式写入 ✓ 不占内存 ✓ 支持 zip 自动解压 ✓ 带口令校验 ✓）
+# 上传游戏（流式写入 ✓ 不占内存 ✓ 支持 zip 自动解压 ✓）
 . /usr/share/libubox/jshn.sh 2>/dev/null
 
 CFG=game
@@ -8,19 +8,13 @@ say() { hdr; json_init; json_add_boolean ok "$1"; json_add_string msg "$2"; json
 
 GAME_DIR=$(uci -q get $CFG.main.game_dir); [ -n "$GAME_DIR" ] || GAME_DIR=/opt/game
 ROM_DIR="$GAME_DIR/roms"
-KEY=$(uci -q get $CFG.main.upload_key)
 
 q=$QUERY_STRING
 getq() { printf '%s' "$q" | tr '&' '\n' | sed -n "s/^$1=//p" | head -1; }
 urldec() { printf '%b' "$(printf '%s' "$1" | sed 's/+/ /g; s/%/\\x/g')" 2>/dev/null || printf '%s' "$1"; }
 
-key=$(getq k)
-[ -n "$key" ] || key=$(getq key)
-[ -n "$key" ] || key=$HTTP_X_GAME_KEY
 dir=$(urldec "$(getq dir)")
 name=$(urldec "$(getq name)")
-
-if [ -n "$KEY" ] && [ "$key" != "$KEY" ]; then say 0 "上传口令错误"; fi
 
 case "$dir" in
 	""|.|./) dir="" ;;

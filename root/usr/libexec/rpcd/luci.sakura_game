@@ -52,8 +52,7 @@ list)
 	"name_set": { "path": {}, "display": {} }, "fav_toggle": { "path": {} },
 	"cheat_get": { "path": {} }, "cheat_set": { "path": {}, "text": {} },
 	"save": { "enabled": {}, "use_local_assets": {}, "show_covers": {} },
-	"key": { "action": {} },
-	"rm": { "path": {} } }'
+		"rm": { "path": {} } }'
 	;;
 call)
 	case "$2" in
@@ -108,33 +107,6 @@ call)
 			json_add_string current ""
 		fi
 		json_add_string size "$(du -sh "$(gdir)/assets" 2>/dev/null | awk '{print $1}')"
-		json_dump
-		;;
-	key)
-		read -r IN 2>/dev/null
-		_a=$(arg action)
-		case "$_a" in
-		enable|regen)
-			_k=$(head -c 32 /dev/urandom | md5sum | cut -d' ' -f1)
-			uci set $CFG.main.upload_key="$_k"
-			uci commit $CFG
-			;;
-		disable)
-			uci -q delete $CFG.main.upload_key
-			uci commit $CFG
-			;;
-		esac
-		json_init
-		json_add_boolean ok 1
-		if [ -n "$(uget upload_key)" ]; then
-			json_add_boolean enabled 1
-			json_add_string key "$(uget upload_key)"
-			json_add_string msg "上传口令保护已开启 ✓"
-		else
-			json_add_boolean enabled 0
-			json_add_string key ""
-			json_add_string msg "上传口令保护已关闭 ✓ 内网直接可用 ✓"
-		fi
 		json_dump
 		;;
 	save)

@@ -300,7 +300,7 @@
 
 	document.getElementById('ch-save').onclick = function () {
 		RG.post('cheat_set', { p: PATH }, buildCht(cheats)).then(function (r) {
-			RG.toast(r && r.ok ? '✓ 金手指已保存（重新载入后生效）' : ((r && r.msg) || '保存失败 ✗ 检查口令'));
+			RG.toast(r && r.ok ? '✓ 金手指已保存（重新载入后生效）' : ((r && r.msg) || '保存失败 ✗'));
 		});
 	};
 	document.getElementById('ch-reload').onclick = function () { location.reload(); };

@@ -158,18 +158,8 @@
 		empty = document.getElementById('rg-empty');
 		stat = document.getElementById('rg-stat');
 
-		var urlKey = new URLSearchParams(location.search).get('k');
-		if (urlKey) RG.setKey(urlKey);
-
 		document.getElementById('rg-q').addEventListener('input', function (e) { S.q = e.target.value.toLowerCase(); paint(); });
 		document.getElementById('rg-refresh').addEventListener('click', function () { location.reload(); });
-		document.getElementById('rg-key').addEventListener('click', function () { document.getElementById('rg-keybox').hidden = false; });
-		document.getElementById('rg-keyclose').addEventListener('click', function () { document.getElementById('rg-keybox').hidden = true; });
-		document.getElementById('rg-keysave').addEventListener('click', function () {
-			RG.setKey(document.getElementById('rg-keyin').value.trim());
-			document.getElementById('rg-keybox').hidden = true;
-			RG.toast('口令已保存 ✓'); load();
-		});
 
 		Array.prototype.forEach.call(document.querySelectorAll('.rg-tab'), function (t) {
 			t.addEventListener('click', function () {
